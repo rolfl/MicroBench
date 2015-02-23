@@ -7,9 +7,10 @@ import java.util.function.ToIntFunction;
 import java.util.stream.IntStream;
 
 public class ExampleCode {
-    private static final ToIntFunction<String> charcount = 
-            (line) -> (int)IntStream.range(0, line.length()).map(i -> (int)line.charAt(i)).distinct().count();
-            
+    
+    private static final ToIntFunction<String> charcount = (line) -> (int) IntStream.range(0, line.length())
+            .map(i -> (int) line.charAt(i)).distinct().count();
+
     private static final int countDistinctChars(String line) {
         if (line.length() <= 1) {
             return line.length();
@@ -23,14 +24,14 @@ public class ExampleCode {
             }
         }
         return count;
-        
+
     }
-            
+
     public static void main(String[] args) {
         final String testdata = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789";
         final String hello = "Hello World!";
         UBench bench = new UBench("distinct chars");
-        
+
         bench.addTask(Task.buildCheckedIntTask("Functional alphas", () -> charcount.applyAsInt(testdata), 63));
         bench.addTask(Task.buildCheckedIntTask("Functional hello", () -> charcount.applyAsInt(hello), 9));
 
@@ -38,11 +39,11 @@ public class ExampleCode {
         bench.addTask(Task.buildCheckedIntTask("Traditional hello", () -> countDistinctChars(hello), 9));
 
         List<TaskStats> times = bench.benchMark(100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS);
-        
+
         for (TaskStats stats : times) {
             System.out.println(stats);
         }
-        
+
     }
 
 }
