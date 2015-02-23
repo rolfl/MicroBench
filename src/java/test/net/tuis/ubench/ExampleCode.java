@@ -32,15 +32,15 @@ public class ExampleCode {
         final String hello = "Hello World!";
         UBench bench = new UBench("distinct chars");
 
-        bench.addTask(Task.buildCheckedIntTask("Functional alphas", () -> charcount.applyAsInt(testdata), 63));
-        bench.addTask(Task.buildCheckedIntTask("Functional hello", () -> charcount.applyAsInt(hello), 9));
+        bench.addIntTask("Functional alphas", () -> charcount.applyAsInt(testdata), g -> g == 63);
+        bench.addIntTask("Functional hello", () -> charcount.applyAsInt(hello), g -> g == 9);
 
-        bench.addTask(Task.buildCheckedIntTask("Traditional alphas", () -> countDistinctChars(testdata), 63));
-        bench.addTask(Task.buildCheckedIntTask("Traditional hello", () -> countDistinctChars(hello), 9));
+        bench.addIntTask("Traditional alphas", () -> countDistinctChars(testdata));
+        bench.addIntTask("Traditional hello", () -> countDistinctChars(hello));
 
-        List<TaskStats> times = bench.benchMark(100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS);
+        List<UBench.Stats> times = bench.benchMark(100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS);
 
-        for (TaskStats stats : times) {
+        for (UBench.Stats stats : times) {
             System.out.println(stats);
         }
 
