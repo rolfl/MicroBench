@@ -41,9 +41,9 @@ Now we want to compare their performance for counting the number of characters i
 
         UBench bench = new UBench("distinct chars");
         
-        bench.addTask(Task.buildCheckedIntTask("Functional hello", () -> distinctCount.applyAsInt(hello), 9));
+        bench.addIntTask("Functional hello", () -> distinctCount.applyAsInt(hello), got -> got == 9);
 
-        bench.addTask(Task.buildCheckedIntTask("Traditional hello", () -> countDistinctChars(hello), 9));
+        bench.addIntTask("Traditional hello", () -> countDistinctChars(hello), got -> got == 9);
 
         List<TaskStats> times = bench.benchMark(100000);
         
