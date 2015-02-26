@@ -5,7 +5,7 @@ Often, when developing performance sensitive code, it is convenient to benchmark
 
 ##Example Use Case - Largest Prime Calculator
 
-See the running code in [the test section - net.tuis.ubench.PrimeSieve]()
+See the running code in [the test section - net.tuis.ubench.PrimeSieve](https://github.com/rolfl/MicroBench/blob/master/src/test/java/net/tuis/ubench/PrimeSieve.java)
 
 Consider a function which returns the largest prime number less than a given input value. This is based off a [simple "Sieve of Eratosthenes"](http://en.wikipedia.org/wiki/Sieve_of_Eratosthenes):
 
