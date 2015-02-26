@@ -41,7 +41,7 @@ public class TestTaskStats {
     public void testGet95thPercentileSmall() {
         long[] times = { 100, 100, 200, 200, 300, 400, 500 };
         UStats stats = new UStats("test", "test", 1, times);
-        assertEquals(0.0005, stats.get95thPercentile(TimeUnit.MILLISECONDS), 0.0);
+        assertEquals(0.0004, stats.get95thPercentile(TimeUnit.MILLISECONDS), 0.0);
     }
 
     @Test

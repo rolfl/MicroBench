@@ -166,8 +166,8 @@ public final class UStats {
 
         fastest = tmp[0];
         slowest = tmp[tmp.length - 1];
-        int at95 = (int) (tmp.length * (95.0 / 100.0));
-        int at99 = (int) (tmp.length * (99.0 / 100.0));
+        int at95 = (int) (tmp.length * (95.0 / 100.0)) - 1;
+        int at99 = (int) (tmp.length * (99.0 / 100.0)) - 1;
 
         p95ile = tmp[Math.min(at95, tmp.length - 1)];
         p99ile = tmp[Math.min(at99, tmp.length - 1)];
