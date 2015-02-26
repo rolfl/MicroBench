@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.tuis.ubench</groupId>
 	<artifactId>ubench</artifactId>
@@ -50,12 +49,16 @@
 	</organization>
 	<scm>
 		<url>https://github.com/rolfl/MicroBench</url>
-	</scm>
+		<connection>scm:git:git@github.com:rolfl/MicroBench.git</connection>
+		<developerConnection>scm:git:git@github.com:rolfl/MicroBench.git</developerConnection>
+	  <tag>ubench-0.0.1</tag>
+  </scm>
 	<issueManagement>
 		<url>https://github.com/rolfl/MicroBench/issues</url>
 	</issueManagement>
 	<properties>
 		<jdk.version>1.8</jdk.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
 		<dependency>
