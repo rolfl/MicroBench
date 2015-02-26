@@ -1,7 +1,6 @@
 package net.tuis.ubench;
 
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Class containing the in-flight details of the execution of a single task.
@@ -13,9 +12,6 @@ import java.util.concurrent.TimeUnit;
  */
 final class TaskRunner {
 
-    // simply give up after a billion executions.
-    private static final int MAX_RESULTS = 1_000_000_000;
-
     /**
      * Compute the length of the results array with some space for growth
      * 
@@ -26,7 +22,7 @@ final class TaskRunner {
     private static int expandTo(int length) {
         // add 25% + 100 - limit to Integer.Max
         int toAdd = 100 + (length >> 2);
-        toAdd = Math.min(MAX_RESULTS - length, toAdd);
+        toAdd = Math.min(UBench.MAX_RESULTS - length, toAdd);
         return toAdd == 0 ? -1 : toAdd + length;
     }
 
@@ -41,7 +37,7 @@ final class TaskRunner {
      *            than the minimum
      * @return true if all values are in bounds.
      */
-    private static final boolean inBounds(long[] times, double bound) {
+    private static final boolean inBounds(final long[] times, final double bound) {
         long min = times[0];
         long max = times[0];
         long limit = (long) (min * bound);
@@ -67,25 +63,25 @@ final class TaskRunner {
     private final Task task;
     private final String name;
     private final int index;
-    private final long[] recents;
+    private final long[] stable;
     private final int limit;
-    private final double maxVariance;
+    private final double stableLimit;
 
     private long[] results;
     private boolean complete = false;
     private long remainingTime = 0L;
     private int iterations = 0;
 
-    TaskRunner(String name, Task task, int index, final int iterations, final int minStabilityLen,
-            final double maxVariance, final long timeLimit, final TimeUnit timeUnit) {
+    TaskRunner(String name, Task task, int index, final int iterations, final int stableSpan,
+            final double stableLimit, final long timeLimit) {
         this.name = name;
         this.task = task;
         this.index = index;
-        this.maxVariance = maxVariance;
-        recents = new long[Math.min(minStabilityLen, iterations)];
-        results = new long[Math.min(iterations, 10000)];
-        remainingTime = timeUnit.toNanos(timeLimit);
-        limit = iterations;
+        this.stableLimit = stableLimit;
+        limit = Math.min(UBench.MAX_RESULTS, iterations > 0 ? iterations : UBench.MAX_RESULTS);
+        stable = new long[Math.min(stableSpan, limit)];
+        results = new long[Math.min(limit, 10000)];
+        remainingTime = timeLimit > 0 ? timeLimit : Long.MAX_VALUE;
     }
 
     /**
@@ -109,9 +105,9 @@ final class TaskRunner {
 
         long res = Math.max(task.time(), 1);
         results[iterations] = res;
-        if (recents.length > 0) {
-            recents[iterations % recents.length] = res;
-            if (iterations > recents.length && inBounds(recents, maxVariance)) {
+        if (stable.length > 0) {
+            stable[iterations % stable.length] = res;
+            if (iterations > stable.length && inBounds(stable, stableLimit)) {
                 complete = true;
             }
         }

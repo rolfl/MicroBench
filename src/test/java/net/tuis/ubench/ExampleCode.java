@@ -5,8 +5,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.ToIntFunction;
 import java.util.stream.IntStream;
 
+/**
+ * Simple example test of UBench
+ * 
+ * @author rolf
+ *
+ */
 public class ExampleCode {
-    
+
     private static final ToIntFunction<String> charcount = (line) -> (int) IntStream.range(0, line.length())
             .map(i -> (int) line.charAt(i)).distinct().count();
 
@@ -26,22 +32,28 @@ public class ExampleCode {
 
     }
 
+    /**
+     * Test entry point.
+     * 
+     * @param args
+     *            ignored.
+     */
     public static void main(String[] args) {
         final String testdata = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789";
         final String hello = "Hello World!";
-        
+
         UBench bench = new UBench("distinct chars");
 
         bench.addIntTask("Functional alphas", () -> charcount.applyAsInt(testdata), g -> g == 63);
         bench.addIntTask("Functional hello", () -> charcount.applyAsInt(hello), g -> g == 9);
 
-        bench.addIntTask("Traditional alphas", () -> countDistinctChars(testdata), g-> g == 63);
-        bench.addIntTask("Traditional hello", () -> countDistinctChars(hello), g-> g == 9);
+        bench.addIntTask("Traditional alphas", () -> countDistinctChars(testdata), g -> g == 63);
+        bench.addIntTask("Traditional hello", () -> countDistinctChars(hello), g -> g == 9);
 
-        bench.reportStats("Warmup", bench.benchMark(100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
-        bench.reportStats("Sequential", bench.benchMark(UMode.SEQUENTIAL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
-        bench.reportStats("Parallel", bench.benchMark(UMode.PARALLEL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
-        bench.reportStats("Interleaved", bench.benchMark(UMode.INTERLEAVED, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
+        bench.reportStats("Warmup", bench.press(100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
+        bench.reportStats("Sequential", bench.press(UMode.SEQUENTIAL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
+        bench.reportStats("Parallel", bench.press(UMode.PARALLEL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
+        bench.reportStats("Interleaved", bench.press(UMode.INTERLEAVED, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
 
     }
 

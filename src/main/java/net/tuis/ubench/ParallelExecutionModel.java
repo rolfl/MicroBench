@@ -54,6 +54,7 @@ final class ParallelExecutionModel implements TaskExecutionModel, ThreadFactory 
 
     }
 
+    @Override
     public final Thread newThread(Runnable r) {
         Thread t = new Thread(r, "Parallel Model " + threadId.incrementAndGet());
         t.setDaemon(true);
@@ -65,7 +66,7 @@ final class ParallelExecutionModel implements TaskExecutionModel, ThreadFactory 
 
         UStats[] results = new UStats[tasks.length];
         ExecutorService service = Executors.newFixedThreadPool(tasks.length, this);
-        CompletionService<Combiner> completion = new ExecutorCompletionService<Combiner>(service);
+        CompletionService<Combiner> completion = new ExecutorCompletionService<>(service);
 
         final AtomicBoolean terminator = new AtomicBoolean(false);
         try {

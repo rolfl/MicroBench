@@ -7,6 +7,7 @@ import java.util.stream.LongStream;
 
 import org.junit.Test;
 
+@SuppressWarnings("javadoc")
 public class TestTaskStats {
 
     @Test
@@ -20,7 +21,7 @@ public class TestTaskStats {
     @Test
     public void testGetZoneTimesMilliUnEven() {
         long[] times = { 100, 100, 200, 200, 300, 400, 500 };
-        long[] expect = {100, 200, 300, 400, 500};
+        long[] expect = { 100, 200, 300, 400, 500 };
         UStats stats = new UStats("test", "test", 1, times);
         double[] zones = LongStream.of(expect).mapToDouble(t -> t / 1000000.0).toArray();
         assertArrayEquals(zones, stats.getZoneTimes(5, TimeUnit.MILLISECONDS), 0.0);
@@ -32,7 +33,7 @@ public class TestTaskStats {
         for (int i = 0; i < times.length; i++) {
             times[i] = (i + 1) * 100;
         }
-        int[] expect = {1, 2, 4, 8, 16, 32, 64, 128, 256, 489};
+        int[] expect = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 489 };
         UStats stats = new UStats("test", "test", 1, times);
         assertArrayEquals(expect, stats.getDoublingHistogram());
     }
@@ -54,7 +55,6 @@ public class TestTaskStats {
         UStats stats = new UStats("test", "test", 1, times);
         assertEquals(expect, stats.get95thPercentile(TimeUnit.MILLISECONDS), 0.0);
     }
-
 
     @Test
     public void testGetAverage() {

@@ -100,8 +100,6 @@ public final class UStats {
      *   492.009
      * </pre>
      * 
-     * </ol>
-     * 
      * @param time
      *            the time to display (in nanoseconds)
      * @return A Time Unit that will display the nanosecond time well.
@@ -239,11 +237,14 @@ public final class UStats {
     }
 
     /**
-     * Identify what a good time Unit would be to present the results in these statistics.
+     * Identify what a good time Unit would be to present the results in these
+     * statistics.
      * <p>
-     * Calculated as the equivalent of <code>findBestUnit(getFastestRawNanos())</code>
+     * Calculated as the equivalent of
+     * <code>findBestUnit(getFastestRawNanos())</code>
+     * 
      * @return A time unit useful for scaling these statistical results.
-     * @See {@link UStats#findBestUnit(long)}
+     * @see UStats#findBestUnit(long)
      */
     public TimeUnit getGoodUnit() {
         return unit;
@@ -273,6 +274,8 @@ public final class UStats {
      * 
      * @param zoneCount
      *            the number of zones to compute
+     * @param timeUnit 
+     *            the unit in which to report the times
      * @return an array of times (in the given unit) representing the average
      *         time for all runs in the respective zone.
      */
@@ -310,8 +313,9 @@ public final class UStats {
      * <li>10 runs were between 4 and 8 times slower
      * <li>1 run was between 8 and 16 times slower
      * <li>1 run was between 32 and 64 times slower
+     * </ul>
      * 
-     * @return
+     * @return an int array containing the time distribution frequencies.
      */
     public final int[] getDoublingHistogram() {
         return Arrays.copyOf(histogram, histogram.length);
@@ -322,6 +326,8 @@ public final class UStats {
      * <p>
      * 99% of all runs completed in this time, or faster.
      * 
+     * @param timeUnit 
+     *            the unit in which to report the times
      * @return the time of the 99<sup>th</sup> percentile in the given time unit.
      */
     public final double get99thPercentile(TimeUnit timeUnit) {
@@ -333,6 +339,8 @@ public final class UStats {
      * <p>
      * 95% of all runs completed in this time, or faster.
      * 
+     * @param timeUnit 
+     *            the unit in which to report the times
      * @return the time of the 95<sup>th</sup> percentile in the given time unit.
      */
     public final double get95thPercentile(TimeUnit timeUnit) {
@@ -342,6 +350,8 @@ public final class UStats {
     /**
      * Compute the average time of all runs (in milliseconds).
      * 
+     * @param timeUnit 
+     *            the unit in which to report the times
      * @return the average time (in milliseconds)
      */
     public final double getAverage(TimeUnit timeUnit) {
@@ -351,6 +361,8 @@ public final class UStats {
     /**
      * Compute the slowest run (in milliseconds).
      * 
+     * @param timeUnit 
+     *            the unit in which to report the times
      * @return The slowest run time (in milliseconds).
      */
     public final double getSlowest(TimeUnit timeUnit) {
@@ -360,6 +372,8 @@ public final class UStats {
     /**
      * Compute the fastest run (in milliseconds).
      * 
+     * @param timeUnit 
+     *            the unit in which to report the times
      * @return The fastest run time (in milliseconds).
      */
     public final double getFastest(TimeUnit timeUnit) {
