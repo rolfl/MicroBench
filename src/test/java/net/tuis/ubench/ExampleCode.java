@@ -1,7 +1,6 @@
 package net.tuis.ubench;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.ToIntFunction;
 import java.util.stream.IntStream;
@@ -30,19 +29,19 @@ public class ExampleCode {
     public static void main(String[] args) {
         final String testdata = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789";
         final String hello = "Hello World!";
+        
         UBench bench = new UBench("distinct chars");
 
         bench.addIntTask("Functional alphas", () -> charcount.applyAsInt(testdata), g -> g == 63);
         bench.addIntTask("Functional hello", () -> charcount.applyAsInt(hello), g -> g == 9);
 
-        bench.addIntTask("Traditional alphas", () -> countDistinctChars(testdata));
-        bench.addIntTask("Traditional hello", () -> countDistinctChars(hello));
+        bench.addIntTask("Traditional alphas", () -> countDistinctChars(testdata), g-> g == 63);
+        bench.addIntTask("Traditional hello", () -> countDistinctChars(hello), g-> g == 9);
 
-        List<UBench.Stats> times = bench.benchMark(100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS);
-
-        for (UBench.Stats stats : times) {
-            System.out.println(stats);
-        }
+        bench.reportStats("Warmup", bench.benchMark(100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
+        bench.reportStats("Sequential", bench.benchMark(UMode.SEQUENTIAL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
+        bench.reportStats("Parallel", bench.benchMark(UMode.PARALLEL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
+        bench.reportStats("Interleaved", bench.benchMark(UMode.INTERLEAVED, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
 
     }
 
