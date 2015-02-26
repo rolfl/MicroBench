@@ -50,10 +50,10 @@ public class ExampleCode {
         bench.addIntTask("Traditional alphas", () -> countDistinctChars(testdata), g -> g == 63);
         bench.addIntTask("Traditional hello", () -> countDistinctChars(hello), g -> g == 9);
 
-        bench.reportStats("Warmup", bench.press(100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
-        bench.reportStats("Sequential", bench.press(UMode.SEQUENTIAL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
-        bench.reportStats("Parallel", bench.press(UMode.PARALLEL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
-        bench.reportStats("Interleaved", bench.press(UMode.INTERLEAVED, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
+        bench.report("Warmup", bench.press(100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
+        bench.report("Sequential", bench.press(UMode.SEQUENTIAL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
+        bench.report("Parallel", bench.press(UMode.PARALLEL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
+        bench.report("Interleaved", bench.press(UMode.INTERLEAVED, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
 
     }
 
