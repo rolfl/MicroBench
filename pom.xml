@@ -51,8 +51,7 @@
 		<url>https://github.com/rolfl/MicroBench</url>
 		<connection>scm:git:git@github.com:rolfl/MicroBench.git</connection>
 		<developerConnection>scm:git:git@github.com:rolfl/MicroBench.git</developerConnection>
-	  <tag>ubench-0.0.1</tag>
-  </scm>
+    </scm>
 	<issueManagement>
 		<url>https://github.com/rolfl/MicroBench/issues</url>
 	</issueManagement>
