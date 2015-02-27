@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.tuis.ubench</groupId>
 	<artifactId>ubench</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<name>MicroBench</name>
 	<description>Tool for allowing microbenchmarking of code using Java 8 mnemonics</description>
 	<build>
