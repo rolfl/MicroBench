@@ -67,7 +67,7 @@
                   <configuration>
                     <rules>
                       <requireMavenVersion>
-                        <message>Maven 2.6 required to manage Java8 Javadoc links correctly</message>
+                        <message>Maven 2.6 required to manage Java8 Javadoc links correctly - points to Java6 api docs otherwise</message>
                         <version>2.6</version>
                       </requireMavenVersion>
                     </rules>    
