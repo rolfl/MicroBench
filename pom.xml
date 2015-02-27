@@ -60,6 +60,7 @@
               <executions>
                 <execution>
                   <id>enforce-maven</id>
+                  <phase>validate</phase>
                   <goals>
                     <goal>enforce</goal>
                   </goals>
