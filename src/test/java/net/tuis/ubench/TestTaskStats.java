@@ -9,6 +9,30 @@ import org.junit.Test;
 
 @SuppressWarnings("javadoc")
 public class TestTaskStats {
+    
+    @Test
+    public void testEmptyResults() {
+        UStats stats = new UStats("test", "test", 1, new long[0]);
+        assertEquals(0, stats.getFastestRawNanos());
+        assertEquals(0, stats.getSlowestRawNanos());
+        assertArrayEquals(new int[0], stats.getDoublingHistogram());
+        assertEquals(0, stats.get95thPercentileNanos());
+        assertEquals(0, stats.get99thPercentileNanos());
+        assertEquals(0, stats.getAverageRawNanos());
+        assertArrayEquals(new double[0], stats.getZoneTimes(10, TimeUnit.MICROSECONDS), 0.0);
+    }
+
+    @Test
+    public void testSingleResults() {
+        UStats stats = new UStats("test", "test", 1, new long[]{100});
+        assertEquals(100, stats.getFastestRawNanos());
+        assertEquals(100, stats.getSlowestRawNanos());
+        assertArrayEquals(new int[]{1}, stats.getDoublingHistogram());
+        assertEquals(100, stats.get95thPercentileNanos());
+        assertEquals(100, stats.get99thPercentileNanos());
+        assertEquals(100, stats.getAverageRawNanos());
+        assertArrayEquals(new double[]{100}, stats.getZoneTimes(10, TimeUnit.NANOSECONDS), 0.0);
+    }
 
     @Test
     public void testGetZoneTimesMilliSimple() {
@@ -42,7 +66,7 @@ public class TestTaskStats {
     public void testGet95thPercentileSmall() {
         long[] times = { 100, 100, 200, 200, 300, 400, 500 };
         UStats stats = new UStats("test", "test", 1, times);
-        assertEquals(0.0004, stats.get95thPercentile(TimeUnit.MILLISECONDS), 0.0);
+        assertEquals(0.0005, stats.get95thPercentile(TimeUnit.MILLISECONDS), 0.0);
     }
 
     @Test
@@ -51,9 +75,27 @@ public class TestTaskStats {
         for (int i = 0; i < times.length; i++) {
             times[i] = (i + 1) * 100;
         }
-        double expect = times[950 - 1] / 1000000.0;
+        double expect = times[950] / 1000000.0;
         UStats stats = new UStats("test", "test", 1, times);
         assertEquals(expect, stats.get95thPercentile(TimeUnit.MILLISECONDS), 0.0);
+    }
+
+    @Test
+    public void testGet99thPercentileSmall() {
+        long[] times = { 100, 100, 200, 200, 300, 400, 500 };
+        UStats stats = new UStats("test", "test", 1, times);
+        assertEquals(0.0005, stats.get99thPercentile(TimeUnit.MILLISECONDS), 0.0);
+    }
+
+    @Test
+    public void testGet99thPercentileLarge() {
+        long[] times = new long[1000];
+        for (int i = 0; i < times.length; i++) {
+            times[i] = (i + 1) * 100;
+        }
+        double expect = times[990] / 1000000.0;
+        UStats stats = new UStats("test", "test", 1, times);
+        assertEquals(expect, stats.get99thPercentile(TimeUnit.MILLISECONDS), 0.0);
     }
 
     @Test

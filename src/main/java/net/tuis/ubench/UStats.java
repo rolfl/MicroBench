@@ -155,29 +155,40 @@ public final class UStats {
     UStats(String suit, String name, int index, long[] results) {
         this.suite = suit;
         this.name = name;
-        this.results = results;
         this.index = index;
+        
+        if (results == null || results.length == 0) {
+            this.results = new long[0];
+            fastest = 0;
+            slowest = 0;
+            p95ile = 0;
+            p99ile = 0;
 
-        // tmp is only used to compute percentile results.
-        long[] tmp = Arrays.copyOf(results, results.length);
-        Arrays.sort(tmp);
+            average = 0;
+            histogram = new int[0];
+            unit = findBestUnit(fastest);
+        } else {
+            this.results = results;
+            // tmp is only used to compute percentile results.
+            long[] tmp = Arrays.copyOf(results, results.length);
+            Arrays.sort(tmp);
 
-        fastest = tmp[0];
-        slowest = tmp[tmp.length - 1];
-        int at95 = (int) (tmp.length * (95.0 / 100.0)) - 1;
-        int at99 = (int) (tmp.length * (99.0 / 100.0)) - 1;
+            fastest = tmp[0];
+            slowest = tmp[tmp.length - 1];
 
-        p95ile = tmp[Math.min(at95, tmp.length - 1)];
-        p99ile = tmp[Math.min(at99, tmp.length - 1)];
+            p95ile = tmp[(int) (tmp.length * 0.95)];
+            p99ile = tmp[(int) (tmp.length * 0.99)];
 
-        long sum = LongStream.of(results).sum();
-        average = sum / tmp.length;
-        histogram = new int[logTwo(slowest, fastest) + 1];
-        for (long t : tmp) {
-            histogram[logTwo(t, fastest)]++;
+            long sum = LongStream.of(results).sum();
+            average = sum / tmp.length;
+            histogram = new int[logTwo(slowest, fastest) + 1];
+            for (long t : tmp) {
+                histogram[logTwo(t, fastest)]++;
+            }
+
+            unit = findBestUnit(fastest);
         }
 
-        unit = findBestUnit(fastest);
     }
 
     /**
@@ -280,6 +291,9 @@ public final class UStats {
      *         time for all runs in the respective zone.
      */
     public final double[] getZoneTimes(int zoneCount, TimeUnit timeUnit) {
+        if (results.length == 0) {
+            return new double[0];
+        }
         double[] ret = new double[Math.min(zoneCount, results.length)];
         int perblock = results.length / ret.length;
         int overflow = results.length % ret.length;
