@@ -150,7 +150,7 @@ public final class UBench {
             int result = task.getAsInt();
             long time = System.nanoTime() - start;
             if (check != null && !check.test(result)) {
-                throw new IllegalStateException(String.format("Task %s failed Result: %s", name, result));
+                throw new IllegalStateException(String.format("Task %s failed Result: %d", name, result));
             }
             return time;
         });
@@ -188,7 +188,7 @@ public final class UBench {
             long result = task.getAsLong();
             long time = System.nanoTime() - start;
             if (check != null && !check.test(result)) {
-                throw new IllegalStateException(String.format("Task %s failed Result: %s", name, result));
+                throw new IllegalStateException(String.format("Task %s failed Result: %d", name, result));
             }
             return time;
         });
@@ -225,7 +225,7 @@ public final class UBench {
             double result = task.getAsDouble();
             long time = System.nanoTime() - start;
             if (check != null && !check.test(result)) {
-                throw new IllegalStateException(String.format("Task %s failed Result: %s", name, result));
+                throw new IllegalStateException(String.format("Task %s failed Result: %f", name, result));
             }
             return time;
         });
@@ -417,6 +417,14 @@ public final class UBench {
     @Override
     public String toString() {
         return String.format("%s with tasks: %s", suiteName, tasks.toString());
+    }
+
+    /**
+     * Return the name this UBench suite was created with.
+     * @return the name of this suite.
+     */
+    public String getSuiteName() {
+        return suiteName;
     }
 
 }

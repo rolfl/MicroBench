@@ -14,7 +14,7 @@ import java.util.stream.IntStream;
 public class ExampleCode {
 
     private static final ToIntFunction<String> charcount = (line) -> (int) IntStream.range(0, line.length())
-            .map(i -> (int) line.charAt(i)).distinct().count();
+            .map(i -> line.charAt(i)).distinct().count();
 
     private static final int countDistinctChars(String line) {
         if (line.length() <= 1) {
