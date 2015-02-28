@@ -82,13 +82,13 @@ final class ParallelExecutionModel implements TaskExecutionModel, ThreadFactory 
         } catch (InterruptedException e) {
             e.printStackTrace();
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("Parallel Execution interrupted. See cause.", e);
+            throw new UBenchRuntimeException("Parallel Execution interrupted. See cause.", e);
         } catch (ExecutionException e) {
             Throwable cause = e.getCause();
-            if (cause instanceof RuntimeException) {
-                throw (RuntimeException) cause;
+            if (cause instanceof UBenchRuntimeException) {
+                throw (UBenchRuntimeException) cause;
             }
-            throw new IllegalStateException("Parallel Execution failed. See cause.", cause);
+            throw new UBenchRuntimeException("Parallel Execution failed. See cause.", cause);
         } finally {
             terminator.set(true);
             service.shutdown();
@@ -96,11 +96,11 @@ final class ParallelExecutionModel implements TaskExecutionModel, ThreadFactory 
                 try {
                     service.awaitTermination(1, TimeUnit.SECONDS);
                     if (!service.isTerminated()) {
-                        throw new IllegalStateException(
+                        throw new UBenchRuntimeException(
                                 "Unable to cleanly shut down the Parallel execution in 1 second");
                     }
                 } catch (InterruptedException ie) {
-                    throw new IllegalStateException("Parallel Execution interrupted. See cause.", ie);
+                    throw new UBenchRuntimeException("Parallel Execution interrupted. See cause.", ie);
                 }
             }
         }

@@ -165,7 +165,7 @@ public final class UBench {
             T result = task.get();
             long time = System.nanoTime() - start;
             if (check != null && !check.test(result)) {
-                throw new IllegalStateException(String.format("Task %s failed Result: %s", name, result));
+                throw new UBenchRuntimeException(String.format("Task %s failed Result: %s", name, result));
             }
             return time;
         });
@@ -204,7 +204,7 @@ public final class UBench {
             int result = task.getAsInt();
             long time = System.nanoTime() - start;
             if (check != null && !check.test(result)) {
-                throw new IllegalStateException(String.format("Task %s failed Result: %d", name, result));
+                throw new UBenchRuntimeException(String.format("Task %s failed Result: %d", name, result));
             }
             return time;
         });
@@ -242,7 +242,7 @@ public final class UBench {
             long result = task.getAsLong();
             long time = System.nanoTime() - start;
             if (check != null && !check.test(result)) {
-                throw new IllegalStateException(String.format("Task %s failed Result: %d", name, result));
+                throw new UBenchRuntimeException(String.format("Task %s failed Result: %d", name, result));
             }
             return time;
         });
@@ -279,7 +279,7 @@ public final class UBench {
             double result = task.getAsDouble();
             long time = System.nanoTime() - start;
             if (check != null && !check.test(result)) {
-                throw new IllegalStateException(String.format("Task %s failed Result: %f", name, result));
+                throw new UBenchRuntimeException(String.format("Task %s failed Result: %f", name, result));
             }
             return time;
         });
