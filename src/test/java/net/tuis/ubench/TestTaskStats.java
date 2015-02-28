@@ -13,8 +13,8 @@ public class TestTaskStats {
     @Test
     public void testEmptyResults() {
         UStats stats = new UStats("test", "test", 1, new long[0]);
-        assertEquals(0, stats.getFastestRawNanos());
-        assertEquals(0, stats.getSlowestRawNanos());
+        assertEquals(0, stats.getFastestNanos());
+        assertEquals(0, stats.getSlowestNanos());
         assertArrayEquals(new int[0], stats.getDoublingHistogram());
         assertEquals(0, stats.get95thPercentileNanos());
         assertEquals(0, stats.get99thPercentileNanos());
@@ -25,8 +25,8 @@ public class TestTaskStats {
     @Test
     public void testSingleResults() {
         UStats stats = new UStats("test", "test", 1, new long[]{100});
-        assertEquals(100, stats.getFastestRawNanos());
-        assertEquals(100, stats.getSlowestRawNanos());
+        assertEquals(100, stats.getFastestNanos());
+        assertEquals(100, stats.getSlowestNanos());
         assertArrayEquals(new int[]{1}, stats.getDoublingHistogram());
         assertEquals(100, stats.get95thPercentileNanos());
         assertEquals(100, stats.get99thPercentileNanos());

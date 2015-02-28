@@ -214,7 +214,7 @@ public final class UStats {
      * 
      * @return the nanosecond time of the fastest run.
      */
-    public long getFastestRawNanos() {
+    public long getFastestNanos() {
         return fastest;
     }
 
@@ -223,7 +223,7 @@ public final class UStats {
      * 
      * @return the nanosecond time of the slowest run.
      */
-    public long getSlowestRawNanos() {
+    public long getSlowestNanos() {
         return slowest;
     }
 
@@ -267,7 +267,7 @@ public final class UStats {
      * @return (a copy of) the individual test run times (in nanoseconds, and in order of
      *         execution).
      */
-    public long[] getRawData() {
+    public long[] getData() {
         return Arrays.copyOf(results, results.length);
     }
 

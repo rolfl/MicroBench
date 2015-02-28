@@ -48,19 +48,19 @@ public final class UBench {
      * A Comparator which sorts collections of UStats by the fastest time
      * (ascending - fastest first)
      */
-    public static final Comparator<UStats> BY_FASTEST = Comparator.comparingLong(UStats::getFastestRawNanos);
+    public static final Comparator<UStats> BY_FASTEST = Comparator.comparingLong(UStats::getFastestNanos);
     /**
      * A Comparator which sorts collections of UStats by the slowest time
      * (ascending - quickest of the slowest first)
      */
-    public static final Comparator<UStats> BY_SLOWEST = Comparator.comparingLong(UStats::getFastestRawNanos);
+    public static final Comparator<UStats> BY_SLOWEST = Comparator.comparingLong(UStats::getFastestNanos);
     /**
      * A Comparator which sorts collections of UStats by the time consistency -
      * calculated as the slowest/fastest ratio (ascending - most consistent
      * first)
      */
-    public static final Comparator<UStats> BY_CONSISTENCY = Comparator.comparingDouble(s -> s.getSlowestRawNanos()
-            / (s.getFastestRawNanos() * 1.0));
+    public static final Comparator<UStats> BY_CONSISTENCY = Comparator.comparingDouble(s -> s.getSlowestNanos()
+            / (s.getFastestNanos() * 1.0));
     /**
      * A Comparator which sorts collections of UStats by the average time
      * (ascending - fastest first)
@@ -398,7 +398,7 @@ public final class UBench {
             System.out.println();
         }
         Comparator<UStats> comp = comparator != null ? comparator : BY_ADDED;
-        long mintime = stats.stream().mapToLong(s -> s.getFastestRawNanos()).min().getAsLong();
+        long mintime = stats.stream().mapToLong(s -> s.getFastestNanos()).min().getAsLong();
         TimeUnit tUnit = UStats.findBestUnit(mintime);
         stats.stream().sorted(comp).map(stat -> stat.formatResults(tUnit)).forEach(System.out::println);
     }
