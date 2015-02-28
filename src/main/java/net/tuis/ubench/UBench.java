@@ -23,6 +23,60 @@ import java.util.stream.Stream;
  * <p>
  * Each task can be added to the suite. Once you have the tasks you need, then
  * all tasks can be benchmarked according to limits given in the run.
+ * <p>
+ * <hr>
+ * Example usages - which is faster, <code>Arrays.sort(...)</code>, or <code>IntStream.sorted()</code>?:
+ * <pre>
+        Random random = new Random();
+
+        // create an array of 10,000 random integer values.
+        final int[] data = IntStream.generate(random::nextInt).limit(10000).toArray();
+        // create a sorted version, trust the algorithm for the moment.
+        final int[] sorted = Arrays.stream(data).sorted().toArray();
+        // a way to ensure the value is in fact sorted.
+        Predicate<int[]> validate = v -> Arrays.equals(v, sorted);
+        
+        // A stream-based way to sort an array of integers.
+        Supplier<int[]> stream = () -> Arrays.stream(data).sorted().toArray();
+        
+        // The traditional way to sort an array of integers.
+        Supplier<int[]> trad = () -> {
+            int[] copy = Arrays.copyOf(data, data.length);
+            Arrays.sort(copy);
+            return copy;
+        };
+        
+        UBench bench = new UBench("Sort Algorithms");
+        bench.addTask("Functional", stream, validate);
+        bench.addTask("Traditional", trad, validate);
+        bench.report("With Warmup", bench.press(10000));
+ * </pre>
+ * 
+ * You can expect results similar to:
+ * 
+ * <pre>
+
+        With Warmup
+        ===========
+        
+        Task Sort Algorithms -> Functional: (Unit: MILLISECONDS)
+          Count    :    10000      Average  :   0.4576
+          Fastest  :   0.4194      Slowest  :   4.1327
+          95Pctile :   0.5030      99Pctile :   0.6028
+          TimeBlock : 0.493 0.436 0.443 0.459 0.458 0.454 0.457 0.458 0.463 0.456
+          Histogram :  9959    19    21     1
+        
+        Task Sort Algorithms -> Traditional: (Unit: MILLISECONDS)
+          Count    :    10000      Average  :   0.4219
+          Fastest  :   0.4045      Slowest  :   3.6714
+          95Pctile :   0.4656      99Pctile :   0.5420
+          TimeBlock : 0.459 0.417 0.418 0.417 0.416 0.416 0.416 0.419 0.423 0.417
+          Histogram :  9971    18    10     1
+
+
+ * </pre>
+ * 
+ * See {@link UStats} for more details on what the statistics mean.
  * 
  * @author rolf
  *
