@@ -429,6 +429,47 @@ public final class UBench {
     }
 
     /**
+     * Simple helper method that prints the specified title, underlined with '='
+     * characters.
+     * 
+     * @param title
+     *            the title to print (null or empty titles will be ignored).
+     */
+    public static void reportTitle(String title) {
+        if (title == null || title.isEmpty()) {
+            return;
+        }
+        System.out.println(title);
+        System.out.println(Stream.generate(() -> "=").limit(title.length()).collect(Collectors.joining()));
+        System.out.println();
+    }
+
+    /**
+     * Generate and print (System.out) the statistics report using the default (
+     * {@link UBench#BY_ADDED}) sort order.
+     * 
+     * @param stats
+     *            the UStats data to report
+     */
+    public static void report(List<UStats> stats) {
+        report(null, stats, null);
+    }
+
+    /**
+     * Generate and print (System.out) the statistics report using the specified
+     * sort order.
+     * 
+     * @param stats
+     *            the UStats data to report
+     * @param comparator
+     *            the Comparator to sort the UStats by (see class constants for
+     *            some useful suggestions)
+     */
+    public static void report(List<UStats> stats, Comparator<UStats> comparator) {
+        report(null, stats, comparator);
+    }
+
+    /**
      * Generate and print (System.out) the statistics report with the supplied
      * title, and using the default ({@link UBench#BY_ADDED}) sort order.
      * 
@@ -455,11 +496,8 @@ public final class UBench {
      */
     public static void report(String title, List<UStats> stats, Comparator<UStats> comparator) {
 
-        if (title != null) {
-            System.out.println(title);
-            System.out.println(Stream.generate(() -> "=").limit(title.length()).collect(Collectors.joining()));
-            System.out.println();
-        }
+        reportTitle(title);
+        
         Comparator<UStats> comp = comparator != null ? comparator : BY_ADDED;
         long mintime = stats.stream().mapToLong(s -> s.getFastestNanos()).min().getAsLong();
         TimeUnit tUnit = UStats.findBestUnit(mintime);
