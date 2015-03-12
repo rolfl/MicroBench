@@ -26,10 +26,10 @@ public class RandomSorter {
             return copy;
         };
         
-        UBench bench = new UBench("Sort Algorithms");
-        bench.addTask("Functional", stream, validate);
-        bench.addTask("Traditional", trad, validate);
-        UBench.report("With Warmup", bench.press(10000));
+        UBench.report("With Warmup", new UBench("Sort Algorithms")
+            .addTask("Functional", stream, validate)
+            .addTask("Traditional", trad, validate)
+            .press(10000));
         
     }
 

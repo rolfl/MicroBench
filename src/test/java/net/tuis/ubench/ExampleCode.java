@@ -42,13 +42,12 @@ public class ExampleCode {
         final String testdata = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789";
         final String hello = "Hello World!";
 
-        UBench bench = new UBench("distinct chars");
+        UBench bench = new UBench("distinct chars")
+            .addIntTask("Functional alphas", () -> charcount.applyAsInt(testdata), g -> g == 63)
+            .addIntTask("Functional hello", () -> charcount.applyAsInt(hello), g -> g == 9)
 
-        bench.addIntTask("Functional alphas", () -> charcount.applyAsInt(testdata), g -> g == 63);
-        bench.addIntTask("Functional hello", () -> charcount.applyAsInt(hello), g -> g == 9);
-
-        bench.addIntTask("Traditional alphas", () -> countDistinctChars(testdata), g -> g == 63);
-        bench.addIntTask("Traditional hello", () -> countDistinctChars(hello), g -> g == 9);
+            .addIntTask("Traditional alphas", () -> countDistinctChars(testdata), g -> g == 63)
+            .addIntTask("Traditional hello", () -> countDistinctChars(hello), g -> g == 9);
 
         UBench.report("Warmup", bench.press(100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
         UBench.report("Sequential", bench.press(UMode.SEQUENTIAL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
