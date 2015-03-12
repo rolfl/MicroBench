@@ -3,6 +3,16 @@ Enabling simpler microbenchmarks of Java8 and more traditional code.
 
 Often, when developing performance sensitive code, it is convenient to benchmark that code in order to evaluate and improve its performance. UBench is a tool that can help.
 
+##Maven
+
+Maven dependency is available on Maven Central:
+
+    <dependency>
+        <groupId>net.tuis.ubench</groupId>
+        <artifactId>ubench</artifactId>
+        <version>0.0.5</version>
+    </dependency>
+
 ##Example Use Case - Largest Prime Calculator
 
 See the running code in [the test section - net.tuis.ubench.PrimeSieve](https://github.com/rolfl/MicroBench/blob/master/src/test/java/net/tuis/ubench/PrimeSieve.java)
