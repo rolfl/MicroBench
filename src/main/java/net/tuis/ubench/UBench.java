@@ -139,10 +139,11 @@ public final class UBench {
         this.suiteName = suiteName;
     }
 
-    private void putTask(String name, Task t) {
+    private UBench putTask(String name, Task t) {
         synchronized (tasks) {
             tasks.put(name, t);
         }
+        return this;
     }
 
     /**
@@ -158,9 +159,10 @@ public final class UBench {
      *            The task to perform
      * @param check
      *            The check of the results from the task.
+     * @return The same object, for chaining calls.
      */
-    public <T> void addTask(String name, Supplier<T> task, Predicate<T> check) {
-        putTask(name, () -> {
+    public <T> UBench addTask(String name, Supplier<T> task, Predicate<T> check) {
+        return putTask(name, () -> {
             long start = System.nanoTime();
             T result = task.get();
             long time = System.nanoTime() - start;
@@ -181,9 +183,11 @@ public final class UBench {
      *            allowed.
      * @param task
      *            The task to perform
+     *
+     * @return The same object, for chaining calls.
      */
-    public <T> void addTask(String name, Supplier<T> task) {
-        addTask(name, task, null);
+    public <T> UBench addTask(String name, Supplier<T> task) {
+        return addTask(name, task, null);
     }
 
     /**
@@ -197,9 +201,10 @@ public final class UBench {
      *            The task to perform
      * @param check
      *            The check of the results from the task.
+     * @return The same object, for chaining calls.
      */
-    public void addIntTask(String name, IntSupplier task, IntPredicate check) {
-        putTask(name, () -> {
+    public UBench addIntTask(String name, IntSupplier task, IntPredicate check) {
+        return putTask(name, () -> {
             long start = System.nanoTime();
             int result = task.getAsInt();
             long time = System.nanoTime() - start;
@@ -218,10 +223,10 @@ public final class UBench {
      *            allowed.
      * @param task
      *            The task to perform
+     * @return The same object, for chaining calls.
      */
-
-    public void addIntTask(String name, IntSupplier task) {
-        addIntTask(name, task, null);
+    public UBench addIntTask(String name, IntSupplier task) {
+        return addIntTask(name, task, null);
     }
 
     /**
@@ -235,9 +240,10 @@ public final class UBench {
      *            The task to perform
      * @param check
      *            The check of the results from the task.
+     * @return The same object, for chaining calls.
      */
-    public void addLongTask(String name, LongSupplier task, LongPredicate check) {
-        putTask(name, () -> {
+    public UBench addLongTask(String name, LongSupplier task, LongPredicate check) {
+        return putTask(name, () -> {
             long start = System.nanoTime();
             long result = task.getAsLong();
             long time = System.nanoTime() - start;
@@ -256,9 +262,10 @@ public final class UBench {
      *            allowed.
      * @param task
      *            The task to perform
+     * @return The same object, for chaining calls.
      */
-    public void addLongTask(String name, LongSupplier task) {
-        addLongTask(name, task, null);
+    public UBench addLongTask(String name, LongSupplier task) {
+        return addLongTask(name, task, null);
     }
 
     /**
@@ -272,9 +279,10 @@ public final class UBench {
      *            The task to perform
      * @param check
      *            The check of the results from the task.
+     * @return The same object, for chaining calls.
      */
-    public void addDoubleTask(String name, DoubleSupplier task, DoublePredicate check) {
-        putTask(name, () -> {
+    public UBench addDoubleTask(String name, DoubleSupplier task, DoublePredicate check) {
+        return putTask(name, () -> {
             long start = System.nanoTime();
             double result = task.getAsDouble();
             long time = System.nanoTime() - start;
@@ -293,9 +301,10 @@ public final class UBench {
      *            allowed.
      * @param task
      *            The task to perform
+     * @return The same object, for chaining calls.
      */
-    public void addDoubleTask(String name, DoubleSupplier task) {
-        addDoubleTask(name, task, null);
+    public UBench addDoubleTask(String name, DoubleSupplier task) {
+        return addDoubleTask(name, task, null);
     }
 
     /**
