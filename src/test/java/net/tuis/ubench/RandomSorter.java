@@ -29,7 +29,7 @@ public class RandomSorter {
         UBench bench = new UBench("Sort Algorithms");
         bench.addTask("Functional", stream, validate);
         bench.addTask("Traditional", trad, validate);
-        bench.report("With Warmup", bench.press(10000));
+        UBench.report("With Warmup", bench.press(10000));
         
     }
 

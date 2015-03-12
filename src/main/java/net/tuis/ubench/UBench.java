@@ -437,7 +437,7 @@ public final class UBench {
      * @param stats
      *            the UStats data to report
      */
-    public void report(String title, List<UStats> stats) {
+    public static void report(String title, List<UStats> stats) {
         report(title, stats, null);
     }
 
@@ -453,7 +453,7 @@ public final class UBench {
      *            the Comparator to sort the UStats by (see class constants for
      *            some useful suggestions)
      */
-    public void report(String title, List<UStats> stats, Comparator<UStats> comparator) {
+    public static void report(String title, List<UStats> stats, Comparator<UStats> comparator) {
 
         if (title != null) {
             System.out.println(title);

@@ -51,7 +51,7 @@ Simply run the code in a UBench task:
 
         UBench bench = new UBench("Simple Performance");
         bench.addIntTask("Prime less than 4000", () -> getMaxPrimeBefore(4000), p -> p == 3989);
-        bench.report("Simple Performance", bench.press(10000));
+        UBench.report("Simple Performance", bench.press(10000));
 
 This will produce (on my machine) the results:
 
@@ -103,7 +103,7 @@ Note that the code is the same as the initial example, but the method name is di
         UBench bench = new UBench("Comparative Performance");
         bench.addIntTask("Primes Filled", () -> getMaxPrimeBefore(4000), p -> p == 3989);
         bench.addIntTask("Primes Negated", () -> getMaxPrimeBeforeNeg(4000), p -> p == 3989);
-        bench.report("Effects of Arrays.fill()", bench.press(10000));
+        UBench.report("Effects of Arrays.fill()", bench.press(10000));
 
 This produces the output:
 
@@ -141,7 +141,7 @@ How does the performance change with different values for the limit? Let's check
             bench.addIntTask("Primes " + limit, () -> getMaxPrimeBefore(limit), p -> p == check);
         }
         
-        bench.report("Prime Scalability", bench.press(UMode.SEQUENTIAL, 10000));
+        UBench.report("Prime Scalability", bench.press(UMode.SEQUENTIAL, 10000));
 
 We run the code and get the results:
 
