@@ -10,7 +10,7 @@ Maven dependency is available on Maven Central:
     <dependency>
         <groupId>net.tuis.ubench</groupId>
         <artifactId>ubench</artifactId>
-        <version>0.0.5</version>
+        <version>0.1.0</version>
     </dependency>
 
 ##Example Use Case - Largest Prime Calculator
@@ -49,14 +49,12 @@ First up, how fast is it? What happens to the performance as the Java JIT compil
 
 Simply run the code in a UBench task:
 
-        UBench bench = new UBench("Simple Performance");
-        bench.addIntTask("Prime less than 4000", () -> getMaxPrimeBefore(4000), p -> p == 3989);
-        UBench.report("Simple Performance", bench.press(10000));
+        UBench bench = new UBench("Simple Performance")
+               .addIntTask("Prime less than 4000", () -> getMaxPrimeBefore(4000), p -> p == 3989)
+               .press(10000)
+               .report();
 
 This will produce (on my machine) the results:
-
-     Simple Performance
-    ==================
 
     Task Simple Performance -> Prime less than 4000: (Unit: MICROSECONDS)
       Count    :     10000      Average  :   17.4710
@@ -100,10 +98,11 @@ How about comparing a revised implementation? One which does not do the ```Array
 
 Note that the code is the same as the initial example, but the method name is different, it does not do the Arrays.fill, and it has a negated check of the boolean value, and it sets values to true, instead of setting them to false. How much will the removal of the fill improve the performance?
 
-        UBench bench = new UBench("Comparative Performance");
-        bench.addIntTask("Primes Filled", () -> getMaxPrimeBefore(4000), p -> p == 3989);
-        bench.addIntTask("Primes Negated", () -> getMaxPrimeBeforeNeg(4000), p -> p == 3989);
-        UBench.report("Effects of Arrays.fill()", bench.press(10000));
+        UBench bench = new UBench("Comparative Performance")
+              .addIntTask("Primes Filled", () -> getMaxPrimeBefore(4000), p -> p == 3989)
+              .addIntTask("Primes Negated", () -> getMaxPrimeBeforeNeg(4000), p -> p == 3989)
+              .press(10000)
+              .report("Effects of Arrays.fill()");
 
 This produces the output:
 
@@ -141,7 +140,7 @@ How does the performance change with different values for the limit? Let's check
             bench.addIntTask("Primes " + limit, () -> getMaxPrimeBefore(limit), p -> p == check);
         }
         
-        UBench.report("Prime Scalability", bench.press(UMode.SEQUENTIAL, 10000));
+        bench.press(UMode.SEQUENTIAL, 10000).report("Prime Scalability");
 
 We run the code and get the results:
 
