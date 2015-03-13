@@ -1,9 +1,7 @@
 package net.tuis.ubench;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.DoublePredicate;
@@ -14,8 +12,6 @@ import java.util.function.LongPredicate;
 import java.util.function.LongSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * The UBench class encompasses a suite of tasks that are to be compared...
@@ -46,10 +42,11 @@ import java.util.stream.Stream;
             return copy;
         };
         
-        UBench bench = new UBench("Sort Algorithms");
-        bench.addTask("Functional", stream, validate);
-        bench.addTask("Traditional", trad, validate);
-        bench.report("With Warmup", bench.press(10000));
+        UBench bench = new UBench("Sort Algorithms")
+              .addTask("Functional", stream, validate);
+              .addTask("Traditional", trad, validate);
+              .press(10000)
+              .report("With Warmup");
  * </pre>
  * 
  * You can expect results similar to:
@@ -87,44 +84,6 @@ public final class UBench {
      * At most a billion iterations of any task will be attempted.
      */
     public static final int MAX_RESULTS = 1_000_000_000;
-
-    /**
-     * A Comparator which sorts collections of UStats by the 95<sup>th</sup>
-     * percentile time (ascending - fastest first)
-     */
-    public static final Comparator<UStats> BY_95PCTILE = Comparator.comparingLong(UStats::get95thPercentileNanos);
-    /**
-     * A Comparator which sorts collections of UStats by the 99<sup>th</sup>
-     * percentile time (ascending - fastest first)
-     */
-    public static final Comparator<UStats> BY_99PCTILE = Comparator.comparingLong(UStats::get99thPercentileNanos);
-    /**
-     * A Comparator which sorts collections of UStats by the fastest time
-     * (ascending - fastest first)
-     */
-    public static final Comparator<UStats> BY_FASTEST = Comparator.comparingLong(UStats::getFastestNanos);
-    /**
-     * A Comparator which sorts collections of UStats by the slowest time
-     * (ascending - quickest of the slowest first)
-     */
-    public static final Comparator<UStats> BY_SLOWEST = Comparator.comparingLong(UStats::getFastestNanos);
-    /**
-     * A Comparator which sorts collections of UStats by the time consistency -
-     * calculated as the slowest/fastest ratio (ascending - most consistent
-     * first)
-     */
-    public static final Comparator<UStats> BY_CONSISTENCY = Comparator.comparingDouble(s -> s.getSlowestNanos()
-            / (s.getFastestNanos() * 1.0));
-    /**
-     * A Comparator which sorts collections of UStats by the average time
-     * (ascending - fastest first)
-     */
-    public static final Comparator<UStats> BY_AVERAGE = Comparator.comparingDouble(UStats::getAverageRawNanos);
-    /**
-     * A Comparator which sorts collections of UStats by the order in which they
-     * were added to the UBench suite
-     */
-    public static final Comparator<UStats> BY_ADDED = Comparator.comparingDouble(UStats::getIndex);
 
     private final Map<String, Task> tasks = new LinkedHashMap<>();
     private final String suiteName;
@@ -330,7 +289,7 @@ public final class UBench {
      *            for.
      * @return the results of all completed tasks.
      */
-    public List<UStats> press(final UMode mode, final int iterations, final int stableSpan, final double stableBound,
+    public UReport press(final UMode mode, final int iterations, final int stableSpan, final double stableBound,
             final long timeLimit, final TimeUnit timeUnit) {
 
         // make sense of any out-of-bounds input parameters.
@@ -341,7 +300,7 @@ public final class UBench {
 
         TaskRunner[] mytasks = getTasks(vit, vmin, stableBound, vtime);
         UStats[] ret = vmode.getModel().executeTasks(suiteName, mytasks);
-        return Arrays.asList(ret);
+        return new UReport(Arrays.asList(ret));
     }
 
     /**
@@ -357,7 +316,7 @@ public final class UBench {
      *            for.
      * @return the results of all completed tasks.
      */
-    public List<UStats> press(UMode mode, final long timeLimit, final TimeUnit timeUnit) {
+    public UReport press(UMode mode, final long timeLimit, final TimeUnit timeUnit) {
         return press(mode, 0, 0, 0.0, timeLimit, timeUnit);
     }
 
@@ -371,7 +330,7 @@ public final class UBench {
      *            maximum number of iterations to run.
      * @return the results of all completed tasks.
      */
-    public List<UStats> press(UMode mode, final int iterations) {
+    public UReport press(UMode mode, final int iterations) {
         return press(mode, iterations, 0, 0.0, 0, null);
     }
 
@@ -396,7 +355,7 @@ public final class UBench {
      *            for.
      * @return the results of all completed tasks.
      */
-    public List<UStats> press(final int iterations, final int stableSpan, final double stableBound,
+    public UReport press(final int iterations, final int stableSpan, final double stableBound,
             final long timeLimit, final TimeUnit timeUnit) {
         return press(null, iterations, stableSpan, stableBound, timeLimit, timeUnit);
     }
@@ -412,7 +371,7 @@ public final class UBench {
      *            for.
      * @return the results of all completed tasks.
      */
-    public List<UStats> press(final long timeLimit, final TimeUnit timeUnit) {
+    public UReport press(final long timeLimit, final TimeUnit timeUnit) {
         return press(null, timeLimit, timeUnit);
     }
 
@@ -424,84 +383,8 @@ public final class UBench {
      *            maximum number of iterations to run.
      * @return the results of all completed tasks.
      */
-    public List<UStats> press(final int iterations) {
+    public UReport press(final int iterations) {
         return press(null, iterations);
-    }
-
-    /**
-     * Simple helper method that prints the specified title, underlined with '='
-     * characters.
-     * 
-     * @param title
-     *            the title to print (null or empty titles will be ignored).
-     */
-    public static void reportTitle(String title) {
-        if (title == null || title.isEmpty()) {
-            return;
-        }
-        System.out.println(title);
-        System.out.println(Stream.generate(() -> "=").limit(title.length()).collect(Collectors.joining()));
-        System.out.println();
-    }
-
-    /**
-     * Generate and print (System.out) the statistics report using the default (
-     * {@link UBench#BY_ADDED}) sort order.
-     * 
-     * @param stats
-     *            the UStats data to report
-     */
-    public static void report(List<UStats> stats) {
-        report(null, stats, null);
-    }
-
-    /**
-     * Generate and print (System.out) the statistics report using the specified
-     * sort order.
-     * 
-     * @param stats
-     *            the UStats data to report
-     * @param comparator
-     *            the Comparator to sort the UStats by (see class constants for
-     *            some useful suggestions)
-     */
-    public static void report(List<UStats> stats, Comparator<UStats> comparator) {
-        report(null, stats, comparator);
-    }
-
-    /**
-     * Generate and print (System.out) the statistics report with the supplied
-     * title, and using the default ({@link UBench#BY_ADDED}) sort order.
-     * 
-     * @param title
-     *            the title to use (e.g. "Warmup", "Cached Files", etc.)
-     * @param stats
-     *            the UStats data to report
-     */
-    public static void report(String title, List<UStats> stats) {
-        report(title, stats, null);
-    }
-
-    /**
-     * Generate and print (System.out) the statistics report with the supplied
-     * title, and using the specified sort order.
-     * 
-     * @param title
-     *            the title to use (e.g. "Warmup", "Cached Files", etc.)
-     * @param stats
-     *            the UStats data to report
-     * @param comparator
-     *            the Comparator to sort the UStats by (see class constants for
-     *            some useful suggestions)
-     */
-    public static void report(String title, List<UStats> stats, Comparator<UStats> comparator) {
-
-        reportTitle(title);
-        
-        Comparator<UStats> comp = comparator != null ? comparator : BY_ADDED;
-        long mintime = stats.stream().mapToLong(s -> s.getFastestNanos()).min().getAsLong();
-        TimeUnit tUnit = UStats.findBestUnit(mintime);
-        stats.stream().sorted(comp).map(stat -> stat.formatResults(tUnit)).forEach(System.out::println);
     }
 
     private TaskRunner[] getTasks(final int count, final int stabLength, final double stabVariance, final long timeLimit) {

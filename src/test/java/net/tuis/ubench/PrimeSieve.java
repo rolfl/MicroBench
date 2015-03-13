@@ -47,13 +47,13 @@ public class PrimeSieve {
     private static void benchSimple() {
         UBench bench = new UBench("Simple Performance");
         bench.addIntTask("Prime less than 4000", () -> getMaxPrimeBefore(4000), p -> p == 3989);
-        UBench.report("Simple Performance", bench.press(10000));
+        bench.press(10000).report("Simple Performance");
     }
 
     private static void benchSimpleNeg() {
         UBench bench = new UBench("Negate Performance");
         bench.addIntTask("Prime less than 4000", () -> getMaxPrimeBeforeNeg(4000), p -> p == 3989);
-        UBench.report("Negated Performance", bench.press(10000));
+        bench.press(10000).report("Negated Performance");
     }
 
     private static void benchCompare() {
@@ -62,7 +62,7 @@ public class PrimeSieve {
         bench.addIntTask("Primes Filled", () -> getMaxPrimeBefore(4000), p -> p == 3989);
         bench.addIntTask("Primes Negated", () -> getMaxPrimeBeforeNeg(4000), p -> p == 3989);
         
-        UBench.report("Effects of Arrays.fill()", bench.press(10000));
+        bench.press(10000).report("Effects of Arrays.fill()");
     }
 
     private static void benchScale() {
@@ -77,7 +77,7 @@ public class PrimeSieve {
             bench.addIntTask("Primes " + limit, () -> getMaxPrimeBefore(limit), p -> p == check);
         }
         
-        UBench.report("Prime Scalability", bench.press(UMode.SEQUENTIAL, 10000));
+        bench.press(UMode.SEQUENTIAL, 10000).report("Prime Scalability");
     }
 
     public static void main(String[] args) {

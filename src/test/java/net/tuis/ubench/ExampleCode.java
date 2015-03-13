@@ -49,10 +49,10 @@ public class ExampleCode {
             .addIntTask("Traditional alphas", () -> countDistinctChars(testdata), g -> g == 63)
             .addIntTask("Traditional hello", () -> countDistinctChars(hello), g -> g == 9);
 
-        UBench.report("Warmup", bench.press(100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
-        UBench.report("Sequential", bench.press(UMode.SEQUENTIAL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
-        UBench.report("Parallel", bench.press(UMode.PARALLEL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
-        UBench.report("Interleaved", bench.press(UMode.INTERLEAVED, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS));
+        bench.press(100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS).report("Warmup");
+        bench.press(UMode.SEQUENTIAL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS).report("Sequential");
+        bench.press(UMode.PARALLEL, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS).report("Parallel");
+        bench.press(UMode.INTERLEAVED, 100000, 1000, 10.0, 500, TimeUnit.MILLISECONDS).report("Interleaved");
 
     }
 
