@@ -49,7 +49,7 @@ First up, how fast is it? What happens to the performance as the Java JIT compil
 
 Simply run the code in a UBench task:
 
-        UBench bench = new UBench("Simple Performance")
+        new UBench("Simple Performance")
                .addIntTask("Prime less than 4000", () -> getMaxPrimeBefore(4000), p -> p == 3989)
                .press(10000)
                .report();
@@ -98,7 +98,7 @@ How about comparing a revised implementation? One which does not do the ```Array
 
 Note that the code is the same as the initial example, but the method name is different, it does not do the Arrays.fill, and it has a negated check of the boolean value, and it sets values to true, instead of setting them to false. How much will the removal of the fill improve the performance?
 
-        UBench bench = new UBench("Comparative Performance")
+        new UBench("Comparative Performance")
               .addIntTask("Primes Filled", () -> getMaxPrimeBefore(4000), p -> p == 3989)
               .addIntTask("Primes Negated", () -> getMaxPrimeBeforeNeg(4000), p -> p == 3989)
               .press(10000)
