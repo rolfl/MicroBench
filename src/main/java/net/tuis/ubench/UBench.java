@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  * <p>
  * Each task can be added to the suite. Once you have the tasks you need, then
  * all tasks can be benchmarked according to limits given in the run.
- * <p>
+ * 
  * <hr>
  * Example usages - which is faster, <code>Arrays.sort(...)</code>, or <code>IntStream.sorted()</code>?:
  * <pre>
@@ -30,13 +30,13 @@ import java.util.function.Supplier;
         // create a sorted version, trust the algorithm for the moment.
         final int[] sorted = Arrays.stream(data).sorted().toArray();
         // a way to ensure the value is in fact sorted.
-        Predicate<int[]> validate = v -> Arrays.equals(v, sorted);
+        Predicate&lt;int[]&gt; validate = v -&gt; Arrays.equals(v, sorted);
         
         // A stream-based way to sort an array of integers.
-        Supplier<int[]> stream = () -> Arrays.stream(data).sorted().toArray();
+        Supplier&lt;int[]&gt; stream = () -&gt; Arrays.stream(data).sorted().toArray();
         
         // The traditional way to sort an array of integers.
-        Supplier<int[]> trad = () -> {
+        Supplier&lt;int[]&gt; trad = () -&gt; {
             int[] copy = Arrays.copyOf(data, data.length);
             Arrays.sort(copy);
             return copy;
@@ -56,14 +56,14 @@ import java.util.function.Supplier;
         With Warmup
         ===========
         
-        Task Sort Algorithms -> Functional: (Unit: MILLISECONDS)
+        Task Sort Algorithms -&gt; Functional: (Unit: MILLISECONDS)
           Count    :    10000      Average  :   0.4576
           Fastest  :   0.4194      Slowest  :   4.1327
           95Pctile :   0.5030      99Pctile :   0.6028
           TimeBlock : 0.493 0.436 0.443 0.459 0.458 0.454 0.457 0.458 0.463 0.456
           Histogram :  9959    19    21     1
         
-        Task Sort Algorithms -> Traditional: (Unit: MILLISECONDS)
+        Task Sort Algorithms -&gt; Traditional: (Unit: MILLISECONDS)
           Count    :    10000      Average  :   0.4219
           Fastest  :   0.4045      Slowest  :   3.6714
           95Pctile :   0.4656      99Pctile :   0.5420
