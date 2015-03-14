@@ -104,8 +104,8 @@
     
 	<scm>
 		<url>https://github.com/rolfl/MicroBench</url>
-		<connection>scm:git:git://git@github.com/rolfl/MicroBench.git</connection>
-		<developerConnection>scm:git:git://git@github.com/rolfl/MicroBench.git</developerConnection>
+		<connection>scm:git:git@github.com:rolfl/MicroBench.git</connection>
+		<developerConnection>scm:git:git@github.com:rolfl/MicroBench.git</developerConnection>
 		<!-- developerConnection>scm://git:git@github.com:rolfl/MicroBench.git</developerConnection -->
     </scm>
 	<issueManagement>
