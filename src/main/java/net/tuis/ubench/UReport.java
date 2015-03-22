@@ -232,7 +232,7 @@ public class UReport {
     }
 
     private void reportSO(final String title, final Comparator<UStats> comparator) {
-        try (Writer w = new BufferedWriter(new OutputStreamWriter(System.out))) {
+        try (Writer w = new NonClosingSystemOut()) {
             report(w, title, comparator);
         } catch (IOException e) {
             throw new IllegalStateException("Should never be an exception writing to System.out", e);
