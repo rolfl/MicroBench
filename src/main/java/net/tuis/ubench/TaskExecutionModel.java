@@ -8,6 +8,6 @@ package net.tuis.ubench;
  */
 interface TaskExecutionModel {
 
-    UStats[] executeTasks(String suite, TaskRunner[] tasks);
+    UStats[] executeTasks(String suite, TaskRunner...tasks);
 
 }

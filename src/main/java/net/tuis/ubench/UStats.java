@@ -427,6 +427,14 @@ public final class UStats {
                 formatZoneTime(getZoneTimes(10, tUnit)),
                 formatHisto(getDoublingHistogram()));
     }
+    
+    /**
+     * Retrieve the number of iterations that were executed.
+     * @return the number of runs.
+     */
+    public int getCount() {
+        return results.length;
+    }
 
     /**
      * The name of the UBench Suite this task was run in.

@@ -62,7 +62,7 @@ final class ParallelExecutionModel implements TaskExecutionModel, ThreadFactory 
     }
 
     @Override
-    public UStats[] executeTasks(String suite, TaskRunner[] tasks) {
+    public UStats[] executeTasks(String suite, TaskRunner...tasks) {
 
         UStats[] results = new UStats[tasks.length];
         ExecutorService service = Executors.newFixedThreadPool(tasks.length, this);

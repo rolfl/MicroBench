@@ -10,7 +10,7 @@ package net.tuis.ubench;
 class InterleavedExecutionModel implements TaskExecutionModel {
 
     @Override
-    public UStats[] executeTasks(String suite, TaskRunner[] tasks) {
+    public UStats[] executeTasks(String suite, TaskRunner...tasks) {
         UStats[] results = new UStats[tasks.length];
         boolean allcomplete = false;
         boolean[] complete = new boolean[tasks.length];
