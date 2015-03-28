@@ -1,15 +1,12 @@
 package net.tuis.ubench;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.IntUnaryOperator;
-import java.util.stream.IntStream;
 
 /**
  * Factory class and reporting instances that allow functions to be tested for scalability.
@@ -46,7 +43,10 @@ public class UScale {
         this.stats = stats;
     }
 
-    private void report() {
+    /**
+     * Generate and print (System.out) the scalability report.
+     */
+    public void report() {
         stats.stream()
             .sorted(Comparator.comparingInt(ScaleResult::getScale))
             .map(sr -> String.format("Scale %4d -> %8d (count %d)\n", sr.getScale(), sr.getStats().getAverageRawNanos(), sr.getStats().getCount()))
@@ -121,21 +121,6 @@ public class UScale {
                 
         };
         return new TaskRunner(name, task, 0, 100000, 0, 0.0, TimeUnit.SECONDS.toNanos(1));
-    }
-
-    private static final int[] randomData(int size) {
-        //System.out.println("Randomizing " + size);
-        Random rand = new Random(size);
-        return IntStream.generate(rand::nextInt).limit(size).toArray();
-    }
-    
-    /**
-     * Simple entry point with basic functionality.
-     * @param args
-     */
-    public static void main(String[] args) {
-        scale(div -> div / 3, scale -> scale).report();
-        scale(Arrays::sort, scale -> randomData(scale), false).report();
     }
 
 }
