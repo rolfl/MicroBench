@@ -20,25 +20,19 @@ public class ExampleScales {
     }
 
     public static void main(String[] args) {
-        UScale.scale((int div) -> div / 3, scale -> scale).report();
-        UScale.scale((data) -> {
-            Arrays.sort(data);
-            return 0;
-        }, scale -> randomData(scale), false).report();
+        UScale.scale(div -> div / 3, scale -> scale).report();
+        UScale.scale(Arrays::sort, scale -> randomData(scale), false).report();
 
         arrayCounts.keySet().stream().sorted()
                 .map(scale -> String.format("Scale %d -> created %d", scale, arrayCounts.get(scale).get()))
                 .forEach(System.out::println);
 
-        UScale.scale((data) -> {
-            Arrays.sort(data);
-            return 0;
-        }, scale -> randomData(scale), true).report();
+        UScale.scale(data -> Arrays.sort(data), scale -> randomData(scale), true).report();
 
         arrayCounts.keySet().stream().sorted()
                 .map(scale -> String.format("Scale %d -> created %d", scale, arrayCounts.get(scale).get()))
                 .forEach(System.out::println);
-
+        
     }
 
 }

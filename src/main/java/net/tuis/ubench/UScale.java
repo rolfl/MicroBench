@@ -3,14 +3,9 @@ package net.tuis.ubench;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.DoubleFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
-import java.util.function.IntToDoubleFunction;
-import java.util.function.IntToLongFunction;
-import java.util.function.IntUnaryOperator;
-import java.util.function.LongFunction;
 
 /**
  * Factory class and reporting instances that allow functions to be tested for
@@ -21,8 +16,6 @@ import java.util.function.LongFunction;
  *
  */
 public class UScale {
-
-    private static final int MAX_ITERATIONS = 1000000;
 
     private static final class ScaleResult {
         final int scale;
@@ -66,12 +59,37 @@ public class UScale {
     }
 
     /**
-     * Test the scalability of a function that requires T input data.
+     * Test the scalability of a consumer that requires T input data.
+     * <p>
+     * This method calls <code>scale(Consumer, IntFunction, boolean)</code> with
+     * the reusedata parameter set to true:
+     * 
+     * <pre>
+     * return scale(function, scaler, true);
+     * </pre>
+     * 
+     * This means that the data will be generated once for each scale factor,
+     * and reused.
      * 
      * @param <T>
      *            the type of the input data
-     * @param function
-     *            the function that processes the T data
+     * @param consumer
+     *            the Consumer that processes the T data
+     * @param scaler
+     *            a supplier that can supply T data of different sizes
+     * @return A UScale instance containing the results of the testing
+     */
+    public static <T> UScale scale(Consumer<T> consumer, IntFunction<T> scaler) {
+        return scale(consumer, scaler, true);
+    }
+
+    /**
+     * Test the scalability of a consumer that requires T input data.
+     * 
+     * @param <T>
+     *            the type of the input data
+     * @param consumer
+     *            the comsumer that processes the T data
      * @param scaler
      *            a supplier that can supply T data of different sizes
      * @param reusedata
@@ -79,9 +97,9 @@ public class UScale {
      *            reused often.
      * @return A UScale instance containing the results of the testing
      */
-    public static <T> UScale scale(Function<T, ?> function, IntFunction<T> scaler, final boolean reusedata) {
+    public static <T> UScale scale(Consumer<T> consumer, IntFunction<T> scaler, final boolean reusedata) {
 
-        final ScaleControl<T> scontrol = new ScaleControl<>(function, scaler, reusedata);
+        final ScaleControl<T> scontrol = new ScaleControl<>(consumer, scaler, reusedata);
 
         final TaskRunnerBuilder builder = (name, scale) -> scontrol.buildTask(name, scale);
 
@@ -89,45 +107,46 @@ public class UScale {
     }
 
     /**
-     * Test the scalability of a function that requires an input integer.
+     * Test the scalability of a consumer that requires T input data.
+     * <p>
+     * This method calls <code>scale(Consumer, IntFunction, boolean)</code> with
+     * the reusedata parameter set to true:
      * 
-     * @param function
-     *            the function that processes the input
+     * <pre>
+     * return scale(function, scaler, true);
+     * </pre>
+     * 
+     * This means that the data will be generated once for each scale factor,
+     * and reused.
+     * 
+     * @param <T>
+     *            the type of the input data
+     * @param computer
+     *            the Function that computes the T data
      * @param scaler
-     *            a supplier that can supply data of different sizes in
-     *            proportion to the supply value
+     *            a supplier that can supply T data of different sizes
      * @return A UScale instance containing the results of the testing
      */
-    public static UScale scale(IntFunction<?> function, IntUnaryOperator scaler) {
-        return scaleMapper((name, scale) -> buildIntTask(name, MAX_ITERATIONS, function, scaler.applyAsInt(scale)));
+    public static <T> UScale scale(Function<T, ?> computer, IntFunction<T> scaler) {
+        return computer(computer, scaler, true);
     }
 
     /**
-     * Test the scalability of a function that requires an input long.
+     * Test the scalability of a consumer that requires T input data.
      * 
-     * @param function
-     *            the function that processes the input
+     * @param <T>
+     *            the type of the input data
+     * @param computer
+     *            the computer that processes the T data
      * @param scaler
-     *            a supplier that can supply data of different sizes in
-     *            proportion to the supply value
+     *            a supplier that can supply T data of different sizes
+     * @param reusedata
+     *            if true, data of each size will be created just once, and
+     *            reused often.
      * @return A UScale instance containing the results of the testing
      */
-    public static UScale scale(LongFunction<?> function, IntToLongFunction scaler) {
-        return scaleMapper((name, scale) -> buildLongTask(name, MAX_ITERATIONS, function, scaler.applyAsLong(scale)));
-    }
-
-    /**
-     * Test the scalability of a function that requires an input double.
-     * 
-     * @param function
-     *            the function that processes the input
-     * @param scaler
-     *            a supplier that can supply data of different sizes in
-     *            proportion to the supply value
-     * @return A UScale instance containing the results of the testing
-     */
-    public static UScale scale(DoubleFunction<?> function, IntToDoubleFunction scaler) {
-        return scaleMapper((name, scale) -> buildDoubleTask(name, MAX_ITERATIONS, function, scaler.applyAsDouble(scale)));
+    public static <T> UScale computer(Function<T, ?> computer, IntFunction<T> scaler, final boolean reusedata) {
+        return scale((t) -> computer.apply(t), scaler, reusedata);
     }
 
     private static final UScale scaleMapper(TaskRunnerBuilder scaleBuilder) {
@@ -149,46 +168,6 @@ public class UScale {
         }
 
         return new UScale(results);
-    }
-
-    private static final TaskRunner buildRunner(final String name, final int max, final Task task) {
-        return new TaskRunner(name, task, 0, max, 0, 0.0, TimeUnit.SECONDS.toNanos(1));
-    }
-
-    private static TaskRunner buildIntTask(final String name, final int max, final IntFunction<?> function,
-            final int scale) {
-        return buildRunner(name, max, () -> {
-
-            long start = System.nanoTime();
-            function.apply(scale);
-            long time = System.nanoTime() - start;
-            return time;
-
-        });
-    }
-
-    private static TaskRunner buildLongTask(final String name, final int max, final LongFunction<?> function,
-            final long scale) {
-        return buildRunner(name, max, () -> {
-
-            long start = System.nanoTime();
-            function.apply(scale);
-            long time = System.nanoTime() - start;
-            return time;
-
-        });
-    }
-
-    private static TaskRunner buildDoubleTask(final String name, final int max, final DoubleFunction<?> function,
-            final double scale) {
-        return buildRunner(name, max, () -> {
-
-            long start = System.nanoTime();
-            function.apply(scale);
-            long time = System.nanoTime() - start;
-            return time;
-
-        });
     }
 
 }
