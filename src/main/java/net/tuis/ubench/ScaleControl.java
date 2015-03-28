@@ -3,7 +3,7 @@ package net.tuis.ubench;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
@@ -12,9 +12,9 @@ class ScaleControl<T> {
     private final Map<Integer, Supplier<T>> sources = new HashMap<>(32);
     private final boolean reusedata;
     private final IntFunction<T> scaler;
-    private final Consumer<T> function;
+    private final Function<T, ?> function;
     
-    public ScaleControl(Consumer<T> function, IntFunction<T> scaler, boolean reusedata) {
+    public ScaleControl(Function<T, ?> function, IntFunction<T> scaler, boolean reusedata) {
         this.function = function;
         this.reusedata = reusedata;
         this.scaler = scaler;
@@ -35,7 +35,7 @@ class ScaleControl<T> {
             
             T data = dataSupply(scale).get();
             long start = System.nanoTime();
-            function.accept(data);
+            function.apply(data);
             long time = System.nanoTime() - start;
             return time;
             
