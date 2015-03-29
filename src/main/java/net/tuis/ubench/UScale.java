@@ -132,7 +132,7 @@ public class UScale {
      * @param <T>
      *            the type of the input data needed by the Consumer
      * @param consumer
-     *            the Comsumer that processes the T data
+     *            the Consumer that processes the T data
      * @param scaler
      *            a supplier that can supply T data of different sizes
      * @param reusedata
