@@ -139,6 +139,15 @@ public class UScale {
     public static void main(String[] args) {
         scale(div -> div / 3, scale -> scale).report();
         scale(Arrays::sort, scale -> randomData(scale), false).report();
+        scale(e -> sum(e), scale -> randomData(scale), true).report();
+    }
+
+    private static int sum(int[] i) {
+        int sum = 0;
+        for (int a : i) {
+            sum += a;
+        }
+        return sum;
     }
 
     public List<ScaleResult> getStats() {
