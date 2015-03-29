@@ -4,7 +4,9 @@ import net.tuis.ubench.UScale;
 import org.apache.commons.math3.linear.*;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
@@ -70,8 +72,9 @@ public class ScaleDetect {
             y[i] = stat.getStats().getAverageRawNanos();
         }
 
-        MathModel model = Models.N_LOG_N;
-        return detect(x, y, model);
+        MathModel[] models = new MathModel[]{ Models.LINEAR, Models.LOG_N, Models.N_LOG_N, Models.N_SQUARED };
+        Optional<MathEquation> bestModel = Arrays.stream(models).map(m -> detect(x, y, m)).max(Comparator.comparingDouble(eq -> eq.getRSquared()));
+        return bestModel.get();
     }
 
     private static MathEquation detect(double[] x, double[] y, MathModel model) {
