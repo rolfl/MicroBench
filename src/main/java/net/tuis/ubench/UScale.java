@@ -1,5 +1,7 @@
 package net.tuis.ubench;
 
+import net.tuis.ubench.scale.ScaleDetect;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -51,6 +53,7 @@ public class UScale {
             .sorted(Comparator.comparingInt(ScaleResult::getScale))
             .map(sr -> String.format("Scale %4d -> %8d (count %d)\n", sr.getScale(), sr.getStats().getAverageRawNanos(), sr.getStats().getCount()))
             .forEach(System.out::println);
+        ScaleDetect.detect(this);
     }
    
     /**
