@@ -1,6 +1,10 @@
-package net.tuis.ubench.scale;
+package net.tuis.ubench;
 
 import net.tuis.ubench.UScale;
+import net.tuis.ubench.UStats;
+import net.tuis.ubench.scale.MathEquation;
+import net.tuis.ubench.scale.MathModel;
+import net.tuis.ubench.scale.Models;
 import org.apache.commons.math3.linear.*;
 
 import java.util.Arrays;
@@ -62,14 +66,14 @@ public class ScaleDetect {
 
 
     public static MathEquation detect(UScale scale) {
-        List<UScale.ScaleResult> stats = scale.getStats();
+        List<UStats> stats = scale.getStats();
 
         double[] x = new double[stats.size()];
         double[] y = new double[stats.size()];
         for (int i = 0; i < stats.size(); i++) {
-            UScale.ScaleResult stat = stats.get(i);
-            x[i] = stat.getScale();
-            y[i] = stat.getStats().getAverageRawNanos();
+            UStats stat = stats.get(i);
+            x[i] = stat.getIndex();
+            y[i] = stat.getAverageRawNanos();
         }
 
         MathModel[] models = new MathModel[]{ Models.LINEAR, Models.LOG_N, Models.N_LOG_N, Models.N_SQUARED };

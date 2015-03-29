@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Linear</title>
+    <meta charset="utf-8">
+    <meta name="description" content="${TITLE} UScale report by Microbench: https://github.com/rolfl/MicroBench">
+    <style type="text/css">
+    
+    td {
+            border: 1px black solid;
+            padding: 10px;
+            font-family: monospace;
+            text-align: right;
+        }
+    th {
+            border: 2px black solid;
+            padding: 10px;
+        }
+    table {
+            font-size: 12px;
+            border-collapse: collapse;
+            border: 2px black solid;
+    }
+    
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    .x.axis path {
+        # display: none;
+    }
+
+    .line {
+        fill: none;
+        stroke-width: 1.5px;
+    }
+
+    </style>
+  </head>
+  
+  <body>
+    <h1>UScale Report - ${TITLE}</h1>
+    
+    <div id="plot"></div>
+    <div id="data"></div>
+
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    
+    <script type="text/javascript">
+
+    var data =
+ ${DATA};
+
+    var indexColumn = "index";
+    var countColumn = "count";
+    var dataColumns = [];
+
+    var colours = ["crimson", "darkblue", "blueviolet", "darkgreen", "darkslategray", "darkgoldenrod", "maroon", "saddlebrown", "teal"];
+
+    data.fields.forEach(function(series) {
+        if (series != indexColumn && series != countColumn) {
+            dataColumns.push(series);
+        }
+    });
+
+    function printTable(data) {
+
+        var table = d3.select("#data").append("table");
+
+        // translate the field names in to column names
+        var cols = [];
+        data.fields.forEach(function(name) {
+            cols.push(name.charAt(0).toUpperCase() + name.slice(1));
+        });
+
+        // translate the data values in to raw arrays of numbers,
+        // in same order as columns
+        var raw = [];
+        data.data.forEach(function(stat) {
+            var row = [data.fields.length];
+            for (var i = 0; i < data.fields.length; i++) {
+                row[i] = stat[data.fields[i]];
+            }
+            raw.push(row);
+        });
+
+        // set up the table header values
+        var thead = table.append("thead")
+             .selectAll("tr")
+             .data([cols])
+             .enter()
+             .append("tr")
+             .selectAll("th")
+             .data(function(row){return row;})
+             .enter()
+             .append("th")
+             .text(function(col){return col});
+
+        // map the values in to the table 
+        var tbody = table.append("tbody")
+            .selectAll("tr")
+            .data(raw)
+            .enter().append("tr")
+            
+            .selectAll("td")
+            .data(function(d){return d;})
+            .enter().append("td")
+            .on("mouseover", function(){d3.select(this).style("background-color", "lightcyan")}) 
+            .on("mouseout", function(){d3.select(this).style("background-color", "white")}) 
+            .text(function(d){return d;});
+    }
+
+    function printChart(data) {
+    
+        var stats = data.data;
+
+        var maxIndex = d3.max(stats, function(d){return d[indexColumn]});
+        var maxCount = d3.max(stats, function(d){return d[countColumn]});
+
+        var maxTime = 0;
+        dataColumns.forEach(function(series){
+            var longtime = d3.max(stats, function(d){ return d[series];});
+            if (longtime > maxTime) {
+                maxTime = longtime;
+            }
+        });
+
+        console.log("Max Index " + maxIndex + " Time " + maxTime + "  and Count " + maxCount);
+
+    
+        var margin = {top: 20, right: 80, bottom: 30, left: 80},
+            width = 1000 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+    
+        var svg = d3.select("#plot").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    
+        var xScale = d3.scale.linear()
+            .range([0, width])
+            .domain([0, maxIndex]);
+    
+        var yScale = d3.scale.linear()
+            .range([height, 0])
+            .domain([0, maxTime]);
+    
+        var cScale = d3.scale.linear()
+            .range([height, 0])
+            .domain([0, maxCount]);
+    
+        var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom");
+    
+        var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left");
+    
+        var cAxis = d3.svg.axis()
+            .scale(cScale)
+            .orient("right");
+    
+        svg.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis)
+          .append("text")
+          .attr("x", width - margin.left)
+          .attr("dy", "-5px")
+          .style("text-anchor", "end")
+          .text("Scale");
+
+        svg.append("g")
+          .attr("class", "y axis")
+          .call(yAxis)
+          .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", "-4.5em")
+          .style("text-anchor", "beginning")
+          .text("Time (nanosecs)");
+
+        svg.append("g")
+          .attr("class", "c axis")
+          .attr("transform", "translate(" + width + ", 0)")
+          .call(cAxis)
+          .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", "-1em")
+          .style("text-anchor", "end")
+          .text("Per second Run Count(limited)");
+
+        addSeries(countColumn, colours[colours.length - 1], stats, svg, xScale, cScale);
+        for (var c = dataColumns.length - 1; c >= 0; c--) {
+            addSeries(dataColumns[c], colours[c], stats, svg, xScale, yScale);
+        }
+    
+    }
+
+    function addSeries(series, colour, stats, svg, xScale, yScale) {
+        var line = d3.svg.line()
+            .x(function(d) { return xScale(d[indexColumn]); })
+            .y(function(d) { return yScale(d[series]); });
+        svg.append("path")
+            .datum(stats)
+            .attr("class", "line")
+            .attr("style", "stroke: " + colour)
+            .attr("d", line);
+    }
+
+    printTable(data);
+    printChart(data);
+
+    </script>
+    
+    
+    </body>
+  </body>
+</html>
