@@ -20,7 +20,7 @@ import java.util.stream.IntStream;
  */
 public class UScale {
 
-    private static final class ScaleResult {
+    public static final class ScaleResult {
         final int scale;
         final UStats stats;
         
@@ -138,4 +138,7 @@ public class UScale {
         scale(Arrays::sort, scale -> randomData(scale), false).report();
     }
 
+    public List<ScaleResult> getStats() {
+        return stats;
+    }
 }
