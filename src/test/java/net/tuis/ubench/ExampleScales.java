@@ -1,5 +1,7 @@
 package net.tuis.ubench;
 
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,9 +21,14 @@ public class ExampleScales {
         return IntStream.generate(rand::nextInt).limit(size).toArray();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         UScale.function(div -> div / 3, scale -> scale).report();
-        UScale.consumer(Arrays::sort, scale -> randomData(scale), false).report();
+        UScale scales = UScale.consumer(Arrays::sort, scale -> randomData(scale), false);
+        
+        scales.report();
+        scales.reportHTML("Arrays::sort", Paths.get("output/ArraysSort.html"));
+        System.out.println(scales.json());
+        
 
         arrayCounts.keySet().stream().sorted()
                 .map(scale -> String.format("Scale %d -> created %d", scale, arrayCounts.get(scale).get()))
@@ -34,5 +41,6 @@ public class ExampleScales {
                 .forEach(System.out::println);
         
     }
+
 
 }

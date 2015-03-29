@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>${TITLE}</title>
+    <meta charset="utf-8">
+    <meta name="description" content="${TITLE} UScale report by https://github.com/rolfl/MicroBench">
+	<style type="text/css">
+	
+    td {
+			border: 1px black solid;
+			padding: 10px;
+			font-family: monospace;
+			text-align: right;
+		}
+    th {
+			border: 2px black solid;
+			padding: 10px;
+		}
+	table {
+			font-size: 12px;
+			border-collapse: collapse;
+			border: 2px black solid;
+	}
+	
+	.axis path,
+	.axis line {
+		fill: none;
+		stroke: #000;
+		shape-rendering: crispEdges;
+	}
+
+	.x.axis path {
+		# display: none;
+	}
+
+	.line {
+		fill: none;
+		stroke: steelblue;
+		stroke-width: 1.5px;
+	}
+	
+	</style>
+  </head>
+  
+  <body>
+    <h1>UScale Report - ${TITLE}</h1>
+    
+    <div id="plot"></div>
+    <div id="data"></div>
+
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    
+    <script type="text/javascript">
+    var data = ${DATA};
+
+	function printTable(data) {
+		var table = d3.select("#data")
+			.append("table");
+	
+		var heads = [["Scale", "NanoSecs", "Count", "Tick"]];
+		var thead = table.append("thead");
+	
+		thead.selectAll("tr")
+			 .data(heads)
+			 .enter()
+			 .append("tr")
+			 .selectAll("th")
+			 .data(function(row){return row;})
+			 .enter()
+			 .append("th")
+			 .text(function(col){return col});
+	
+		var tbody = table.append("tbody");
+	
+		tbody.selectAll("tr")
+			.data(data)
+			.enter().append("tr")
+			
+			.selectAll("td")
+			.data(function(d){return d;})
+			.enter().append("td")
+			//.on("mouseover", function(){d3.select(this).style("background-color", "aliceblue")}) 
+			//.on("mouseout", function(){d3.select(this).style("background-color", "white")}) 
+			.text(function(d){return d;});
+	}
+
+	function printChart(data) {
+	
+		var loge2 = Math.log(2);
+	
+		var margin = {top: 20, right: 20, bottom: 30, left: 80},
+			width = 960 - margin.left - margin.right,
+			height = 500 - margin.top - margin.bottom;
+	
+		var svg = d3.select("#plot").append("svg")
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+		  .append("g")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+	
+		var x = d3.scale.linear()
+			.range([0, width]);
+	
+		var y = d3.scale.linear()
+			.range([height, 0]);
+	
+		var xAxis = d3.svg.axis()
+			.scale(x)
+			.orient("bottom");
+	
+		var yAxis = d3.svg.axis()
+			.scale(y)
+			.orient("left");
+	
+		var line = d3.svg.line()
+			.x(function(d) { return x(d.scale); })
+			.y(function(d) { return y(d.usec); });
+	
+		data.forEach(function(d) {
+			d.scale = d[0];
+			d.usec = d[1]/1000;
+		});
+	
+		x.domain(d3.extent(data, function(d) { return d.scale; }));
+		y.domain(d3.extent(data, function(d) { return d.usec; }));
+	
+	  svg.append("g")
+		  .attr("class", "x axis")
+		  .attr("transform", "translate(0," + height + ")")
+		  .call(xAxis)
+		  
+		  .append("text")
+		  .attr("x", width - margin.left)
+		  //.attr("dy", ".71em")
+		  //.style("text-anchor", "end")
+		  .text("Scale");
+
+	  svg.append("g")
+		  .attr("class", "y axis")
+		  //.attr("transform", "translate(0," + width + ")")
+		  .call(yAxis)
+		.append("text")
+		  .attr("transform", "rotate(-90)")
+		  .attr("y", 6)
+		  .attr("dy", ".71em")
+		  .style("text-anchor", "end")
+		  .text("Time (nanosecs)");
+
+	  svg.append("path")
+		  .datum(data)
+		  .attr("class", "line")
+		  .attr("d", line);
+	
+	}
+
+	printTable(data);
+	printChart(data);
+
+    </script>
+    
+    
+    </body>
+  </body>
+</html>
