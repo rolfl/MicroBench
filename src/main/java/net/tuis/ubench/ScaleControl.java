@@ -40,7 +40,7 @@ class ScaleControl<T> {
             return time;
             
         };
-        return new TaskRunner(name, task, 0, 1000000, 0, 0, TimeUnit.SECONDS.toNanos(1));
+        return new TaskRunner(name, task, scale, 1000000, 0, 0, TimeUnit.SECONDS.toNanos(1));
     }
 
 

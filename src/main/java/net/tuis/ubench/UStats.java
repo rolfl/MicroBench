@@ -2,7 +2,10 @@ package net.tuis.ubench;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -28,6 +31,18 @@ public final class UStats {
     private static final double[] unitFactor = buildUnitFactors();
     private static final TimeUnit[] unitOrder = buildUnitOrders();
     private static final String[] unitName = buildUnitNames();
+    
+    private static final Map<String, ToLongFunction<UStats>> TIME_PULLER = new LinkedHashMap<>();
+    
+    static {
+        TIME_PULLER.put("index", s -> s.getIndex());
+        TIME_PULLER.put("fastest", s -> s.getFastestNanos());
+        TIME_PULLER.put("slowest", s -> s.getSlowestNanos());
+        TIME_PULLER.put("average", s -> s.getAverageRawNanos());
+        TIME_PULLER.put("pct95", s -> s.get95thPercentileNanos());
+        TIME_PULLER.put("pct99", s -> s.get99thPercentileNanos());
+        TIME_PULLER.put("count", s -> s.getCount());
+    }
 
     private static final double[] buildUnitFactors() {
         TimeUnit[] tus = TimeUnit.values();
@@ -60,6 +75,14 @@ public final class UStats {
             ret[tu.ordinal()] = tu.toString();
         }
         return ret;
+    }
+
+    /**
+     * When outputting JSON data, the following fields will be populated
+     * @return an array containing the populated fields.
+     */
+    public static String[] getJSONFields() {
+        return TIME_PULLER.keySet().stream().toArray(size -> new String[size]);
     }
 
     /**
@@ -397,6 +420,17 @@ public final class UStats {
     @Override
     public String toString() {
         return formatResults(unit);
+    }
+    
+    /**
+     * Represent this UStats as a name/value JSON structure.
+     * 
+     * @return this data as a JSON-formatted string.
+     */
+    public String toJSONString() {
+        return TIME_PULLER.entrySet().stream()
+                .map(me -> String.format("%s: %d", me.getKey(), me.getValue().applyAsLong(this)))
+                .collect(Collectors.joining(", ", "{", "}"));
     }
 
     /**

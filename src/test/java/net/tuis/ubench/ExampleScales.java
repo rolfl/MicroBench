@@ -20,14 +20,30 @@ public class ExampleScales {
         Random rand = new Random(size);
         return IntStream.generate(rand::nextInt).limit(size).toArray();
     }
+    
+    private static final long linear(long input) {
+        long count = 0;
+        while (input > 10) {
+            input -= 10;
+            count++;
+        }
+        return count;
+    }
 
     public static void main(String[] args) throws IOException {
         UScale.function(div -> div / 3, scale -> scale).report();
+
+        UScale.function(data -> linear(data), scale -> scale).reportHTML("Linear", Paths.get("output/Linear.html"));
+        
+        if (!Boolean.getBoolean("DOALL")) {
+            return;
+        }
+        
         UScale scales = UScale.consumer(Arrays::sort, scale -> randomData(scale), false);
         
         scales.report();
         scales.reportHTML("Arrays::sort", Paths.get("output/ArraysSort.html"));
-        System.out.println(scales.json());
+        System.out.println(scales.toJSONString("Arrays::Sort"));
         
 
         arrayCounts.keySet().stream().sorted()

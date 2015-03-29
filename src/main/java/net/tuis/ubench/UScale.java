@@ -18,6 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 /**
  * Factory class and reporting instances that allow functions to be tested for
@@ -32,34 +33,14 @@ public class UScale {
     private static final long NANO_TICK = computeTick();
     private static final int SCALE_LIMIT = 12_000_000;
 
-    private static final class ScaleResult {
-        final int scale;
-        final UStats stats;
-
-        ScaleResult(int scale, UStats stats) {
-            super();
-            this.scale = scale;
-            this.stats = stats;
-        }
-
-        public int getScale() {
-            return scale;
-        }
-
-        public UStats getStats() {
-            return stats;
-        }
-
-    }
-
     @FunctionalInterface
     private interface TaskRunnerBuilder {
         TaskRunner build(String name, int scale);
     }
 
-    private final List<ScaleResult> stats;
+    private final List<UStats> stats;
 
-    private UScale(List<ScaleResult> stats) {
+    private UScale(List<UStats> stats) {
         this.stats = stats;
     }
     
@@ -84,22 +65,29 @@ public class UScale {
      */
     public void report() {
         stats.stream()
-                .sorted(Comparator.comparingInt(ScaleResult::getScale))
+                .sorted(Comparator.comparingInt(UStats::getIndex))
                 .map(sr -> String.format(
-                        "Scale %4d -> %8d (count %d, threshold %d)\n", 
-                        sr.getScale(), sr.getStats().getAverageRawNanos(), sr.getStats().getCount(), NANO_TICK))
+                        "Scale %4d -> %8d (count %d, threshold %d)", 
+                        sr.getIndex(), sr.getAverageRawNanos(), sr.getCount(), NANO_TICK))
                 .forEach(System.out::println);
     }
 
     /**
      * Get the data as JSON data in an array format (<code>[ [scale,nanos], ...]</code>
+     * @param title The name to apply to this data.
      * @return a JSON formatted string containing the raw data.
      */
-    public String json() {
-        return stats.stream().sorted(Comparator.comparingInt(ScaleResult::getScale))
-                .map(sr -> String.format("  [%d,%d,%d,%d]", sr.getScale(), sr.getStats().getFastestNanos(), sr.getStats().getCount(), NANO_TICK))
-                .collect(Collectors.joining(",\n", "[\n", "\n]"));
-
+    public String toJSONString(String title) {
+        
+        String rawdata = stats.stream().sorted(Comparator.comparingInt(UStats::getIndex))
+                .map(sr -> sr.toJSONString())
+                .collect(Collectors.joining(",\n    ", "[\n    ", "\n]"));
+        
+        String fields = Stream.of(UStats.getJSONFields()).collect(Collectors.joining("\", \"", "[\"", "\"]"));
+        
+        return String.format("{ title: \"%s\",\n  nano_tick: %d,\n  fields: %s,\n  data: %s\n}",
+                title, NANO_TICK, fields, rawdata
+                );
     }
     
     private static String readResource(String path) {
@@ -120,7 +108,7 @@ public class UScale {
      * Create an HTML document (with data and chart) plotting the performance.
      * @param title The Title for the target page.
      * @param target the destination to store the HTML document at.
-     * @throws IOException
+     * @throws IOException if there is a problem writing to the target path
      */
     public void reportHTML(String title, Path target) throws IOException {
         
@@ -128,7 +116,7 @@ public class UScale {
         
         String html = readResource("net/tuis/ubench/scale/UScale.html");
         Map<String, String> subs = new HashMap<>();
-        subs.put("DATA", json());
+        subs.put("DATA", toJSONString(title));
         subs.put("TITLE", title);
         for (Map.Entry<String, String> me : subs.entrySet()) {
             html = html.replaceAll(Pattern.quote("${" + me.getKey() + "}"), Matcher.quoteReplacement(me.getValue()));
@@ -230,23 +218,23 @@ public class UScale {
     private static final UScale scaleMapper(final TaskRunnerBuilder scaleBuilder) {
         UMode.PARALLEL.getModel().executeTasks("Warmup", scaleBuilder.build("warmup", 2));
 
-        final List<ScaleResult> results = new ArrayList<>(20);
+        final List<UStats> results = new ArrayList<>(20);
         
         for (int i = 1; i <= SCALE_LIMIT; i *= 2) {
 
-            results.add(new ScaleResult(i, runStats(i, scaleBuilder)));
-            if (results.get(results.size() -1).getStats().getCount() <= 3) {
+            results.add(runStats(i, scaleBuilder));
+            if (results.get(results.size() -1).getCount() <= 3) {
                 break;
             }
         }
         if (results.size() > 4) {
-            final int last = results.get(results.size() - 1).getScale();
+            final int last = results.get(results.size() - 1).getIndex();
             int step = last >> 3;
             for (int j = last - step; j > step; j -= step) {
                 if (j == last >> 1 || j == last >> 2) {
                     continue;
                 }
-                results.add(new ScaleResult(j, runStats(j, scaleBuilder)));
+                results.add(runStats(j, scaleBuilder));
             }
         }
 
