@@ -72,24 +72,24 @@ public class UScale {
      * and reused.
      * 
      * @param <T>
-     *            the type of the input data
-     * @param consumer
-     *            the Consumer that processes the T data
+     *            the type of the input data needed by the Function
+     * @param function
+     *            the Function that computes the T data
      * @param scaler
      *            a supplier that can supply T data of different sizes
      * @return A UScale instance containing the results of the testing
      */
-    public static <T> UScale scale(Consumer<T> consumer, IntFunction<T> scaler) {
-        return scale(consumer, scaler, true);
+    public static <T> UScale function(Function<T, ?> function, IntFunction<T> scaler) {
+        return function(function, scaler, true);
     }
 
     /**
      * Test the scalability of a consumer that requires T input data.
      * 
      * @param <T>
-     *            the type of the input data
-     * @param consumer
-     *            the comsumer that processes the T data
+     *            the type of the input data needed by the Function
+     * @param function
+     *            the computer that processes the T data
      * @param scaler
      *            a supplier that can supply T data of different sizes
      * @param reusedata
@@ -97,13 +97,8 @@ public class UScale {
      *            reused often.
      * @return A UScale instance containing the results of the testing
      */
-    public static <T> UScale scale(Consumer<T> consumer, IntFunction<T> scaler, final boolean reusedata) {
-
-        final ScaleControl<T> scontrol = new ScaleControl<>(consumer, scaler, reusedata);
-
-        final TaskRunnerBuilder builder = (name, scale) -> scontrol.buildTask(name, scale);
-
-        return scaleMapper(builder);
+    public static <T> UScale function(Function<T, ?> function, IntFunction<T> scaler, final boolean reusedata) {
+        return consumer(function::apply, scaler, reusedata);
     }
 
     /**
@@ -120,24 +115,24 @@ public class UScale {
      * and reused.
      * 
      * @param <T>
-     *            the type of the input data
-     * @param computer
-     *            the Function that computes the T data
+     *            the type of the input data needed by the Consumer
+     * @param consumer
+     *            the Consumer that processes the T data
      * @param scaler
      *            a supplier that can supply T data of different sizes
      * @return A UScale instance containing the results of the testing
      */
-    public static <T> UScale scale(Function<T, ?> computer, IntFunction<T> scaler) {
-        return computer(computer, scaler, true);
+    public static <T> UScale consumer(Consumer<T> consumer, IntFunction<T> scaler) {
+        return consumer(consumer, scaler, true);
     }
 
     /**
      * Test the scalability of a consumer that requires T input data.
      * 
      * @param <T>
-     *            the type of the input data
-     * @param computer
-     *            the computer that processes the T data
+     *            the type of the input data needed by the Consumer
+     * @param consumer
+     *            the Comsumer that processes the T data
      * @param scaler
      *            a supplier that can supply T data of different sizes
      * @param reusedata
@@ -145,8 +140,13 @@ public class UScale {
      *            reused often.
      * @return A UScale instance containing the results of the testing
      */
-    public static <T> UScale computer(Function<T, ?> computer, IntFunction<T> scaler, final boolean reusedata) {
-        return scale((t) -> computer.apply(t), scaler, reusedata);
+    public static <T> UScale consumer(Consumer<T> consumer, IntFunction<T> scaler, final boolean reusedata) {
+
+        final ScaleControl<T> scontrol = new ScaleControl<>(consumer, scaler, reusedata);
+
+        final TaskRunnerBuilder builder = (name, scale) -> scontrol.buildTask(name, scale);
+
+        return scaleMapper(builder);
     }
 
     private static final UScale scaleMapper(TaskRunnerBuilder scaleBuilder) {
