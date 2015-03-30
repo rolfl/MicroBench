@@ -19,26 +19,29 @@ public class ScaleDetect {
     private static final double TOLERANCE = 1e-4;
     private static final double H = 1e-5;
 
-    public static double norm(RealVector data) {
-        double norm = data.getNorm();
-        return norm;
-    }
-
-    public static double[] newtonSolve(Function<double[], double[]> function, double[] initial, double tolerance) {
+    /**
+     * Finding the best fit using least-squares method for an equation system
+     *
+     * @param function Equation system to find fit for. Input: Parameters, Output: Residuals.
+     * @param initial Initial 'guess' for function parameters
+     * @param tolerance How much the function parameters may change before a solution is accepted
+     * @return The parameters to the function that causes the least residuals
+     */
+    private static double[] newtonSolve(Function<double[], double[]> function, double[] initial, double tolerance) {
         RealVector dx = new ArrayRealVector(initial.length);
         dx.set(tolerance + 1);
         int iterations = 0;
         int d = initial.length;
         double[] values = Arrays.copyOf(initial, initial.length);
 
-        while (norm(dx) > tolerance) {
+        while (dx.getNorm() > tolerance) {
             double[] fx = function.apply(values);
             Array2DRowRealMatrix df = new Array2DRowRealMatrix(fx.length, d);
             ArrayRealVector fxVector = new ArrayRealVector(fx);
             for (int i = 0; i < d; i++) {
                 double originalValue = values[i];
                 values[i] += H;
-                double[] fxi = feval(function, values);
+                double[] fxi = function.apply(values);
                 values[i] = originalValue;
                 ArrayRealVector fxiVector = new ArrayRealVector(fxi);
                 RealVector result = fxiVector.subtract(fxVector);
@@ -56,14 +59,7 @@ public class ScaleDetect {
             }
         }
         System.out.println("solved in " + iterations + " iterations");
-
-
-
         return values;
-    }
-
-    private static double[] feval(Function<double[], double[]> function, double[] values) {
-        return function.apply(values);
     }
 
     public static MathEquation detect(UScale scale) {
