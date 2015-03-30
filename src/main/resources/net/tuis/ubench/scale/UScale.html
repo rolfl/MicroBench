@@ -59,6 +59,7 @@
     var loge10 = Math.log(10);
 
     var bigOFunctions = {
+        "%f": function(x, parameters) {return parameters[0];},
         "%f * n + %f": function(x, parameters) {return x * parameters[0] + parameters[1];},
         "%f * log n": function(x, parameters) {return parameters[0] * Math.log10(x)},
         "%f * n log n": function(x, parameters) {return parameters[0] * x * Math.log10(x);},
