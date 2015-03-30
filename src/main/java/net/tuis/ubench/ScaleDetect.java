@@ -80,7 +80,8 @@ public class ScaleDetect {
         }
 
         MathModel[] models = new MathModel[]{ Models.LINEAR, Models.LOG_N, Models.N_LOG_N, Models.N_SQUARED };
-        return Arrays.stream(models).map(m -> detect(x, y, m)).sorted(Comparator.comparingDouble(eq -> eq.getRSquared())).toArray(size -> new MathEquation[size]);
+        // sort by reverse rsquared, or negative r-squared... note the `-` in `eq -> - eq.getRSquared()`
+        return Arrays.stream(models).map(m -> detect(x, y, m)).sorted(Comparator.comparingDouble(eq -> - eq.getRSquared())).toArray(size -> new MathEquation[size]);
     }
 
     private static MathEquation detect(double[] x, double[] y, MathModel model) {
