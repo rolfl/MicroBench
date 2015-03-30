@@ -31,9 +31,12 @@ public class ExampleScales {
     }
 
     public static void main(String[] args) throws IOException {
-        UScale.function(div -> div / 3, scale -> scale).report();
+        //UScale.function(div -> div / 3, scale -> scale).report();
 
-        UScale.function(data -> linear(data), scale -> scale).reportHTML("Linear", Paths.get("output/Linear.html"));
+        UScale.function(
+                data -> linear(data),
+                scale -> scale, true)
+           .reportHTML("Linear", Paths.get("output/Linear.html"));
         
         if (!Boolean.getBoolean("DOALL")) {
             return;

@@ -64,8 +64,11 @@ public class ScaleDetect {
         return function.apply(values);
     }
 
-
     public static MathEquation detect(UScale scale) {
+        return rank(scale)[0];
+    }
+
+    public static MathEquation[] rank(UScale scale) {
         List<UStats> stats = scale.getStats();
 
         double[] x = new double[stats.size()];
@@ -77,8 +80,7 @@ public class ScaleDetect {
         }
 
         MathModel[] models = new MathModel[]{ Models.LINEAR, Models.LOG_N, Models.N_LOG_N, Models.N_SQUARED };
-        Optional<MathEquation> bestModel = Arrays.stream(models).map(m -> detect(x, y, m)).max(Comparator.comparingDouble(eq -> eq.getRSquared()));
-        return bestModel.get();
+        return Arrays.stream(models).map(m -> detect(x, y, m)).sorted(Comparator.comparingDouble(eq -> eq.getRSquared())).toArray(size -> new MathEquation[size]);
     }
 
     private static MathEquation detect(double[] x, double[] y, MathModel model) {

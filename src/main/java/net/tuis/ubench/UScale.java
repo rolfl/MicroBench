@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  * scalability.
  * 
  * @author rolf
- * @author zomis
+ * @author Simon
  *
  */
 public class UScale {
@@ -82,13 +82,14 @@ public class UScale {
         
         String rawdata = stats.stream().sorted(Comparator.comparingInt(UStats::getIndex))
                 .map(sr -> sr.toJSONString())
-                .collect(Collectors.joining(",\n    ", "[\n    ", "\n]"));
+                .collect(Collectors.joining(",\n    ", "[\n    ", "\n ]"));
         
         String fields = Stream.of(UStats.getJSONFields()).collect(Collectors.joining("\", \"", "[\"", "\"]"));
         
-        return String.format("{ title: \"%s\",\n  nano_tick: %d,\n  fields: %s,\n  data: %s\n}",
-                title, NANO_TICK, fields, rawdata
-                );
+        String models = Stream.of(ScaleDetect.rank(this)).map(me -> me.toJSONString()).collect(Collectors.joining(",\n    ", "[\n    ", "\n  ]"));
+        
+        return String.format("{ title: \"%s\",\n  nano_tick: %d,\n  models: %s,\n  fields: %s,\n  data: %s\n}",
+                title, NANO_TICK, models, fields, rawdata);
     }
     
     private static String readResource(String path) {
@@ -115,14 +116,19 @@ public class UScale {
         
         Files.createDirectories(target.toAbsolutePath().getParent());
         
+        System.out.println("Preparing HTML Report " + target);
+        
         String html = readResource("net/tuis/ubench/scale/UScale.html");
         Map<String, String> subs = new HashMap<>();
         subs.put("DATA", toJSONString(title));
+        System.out.println("Stats Loaded " + target);
+        
         subs.put("TITLE", title);
         for (Map.Entry<String, String> me : subs.entrySet()) {
             html = html.replaceAll(Pattern.quote("${" + me.getKey() + "}"), Matcher.quoteReplacement(me.getValue()));
         }
         Files.write(target, html.getBytes(StandardCharsets.UTF_8));
+        System.out.println("Written to " + target);
     }
 
     /**
@@ -250,7 +256,11 @@ public class UScale {
         return UMode.SEQUENTIAL.getModel().executeTasks(runName, runner)[0];
     }
 
+    /**
+     * Obtain a copy of the statistics produced for this UScale instance.
+     * @return a copy of the underlying statistics.
+     */
     public List<UStats> getStats() {
-        return stats;
+        return new ArrayList<>(stats);
     }
 }

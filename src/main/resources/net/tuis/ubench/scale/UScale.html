@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Linear</title>
+    <title>${TITLE}</title>
     <meta charset="utf-8">
-    <meta name="description" content="${TITLE} UScale report by Microbench: https://github.com/rolfl/MicroBench">
+    <meta name="description" content="${TITLE} - UScale: report by Microbench: https://github.com/rolfl/MicroBench">
     <style type="text/css">
     
     td {
@@ -39,21 +39,11 @@
     }
 
     </style>
-  </head>
-  
-  <body>
-    <h1>UScale Report - ${TITLE}</h1>
-    
-    <div id="plot"></div>
-    <div id="data"></div>
-
     <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-    
+
     <script type="text/javascript">
-
-    var data =
- ${DATA};
-
+    
+    var data = ${DATA};
     var indexColumn = "index";
     var countColumn = "count";
     var dataColumns = [];
@@ -66,9 +56,196 @@
         }
     });
 
+    var loge10 = Math.log(10);
+
+    var bigOFunctions = {
+        "%f * n + %f": function(x, parameters) {return x * parameters[0] + parameters[1];},
+        "%f * log n": function(x, parameters) {return parameters[0] * Math.log(x) / loge10;},
+        "%f * n log n": function(x, parameters) {return parameters[0] * x * Math.log(x) / loge10;},
+        "%f*n^2 + %f*n + %f": function(x, parameters) {return parameters[0] * x * x + parameters[1] * x + parameters[2];}
+    };
+
+    </script>
+
+    <script>
+
+    function printChart(data) {
+    
+        var stats = data.data;
+
+        var maxIndex = d3.max(stats, function(d){return d[indexColumn]});
+        var maxCount = d3.max(stats, function(d){return d[countColumn]});
+
+        var maxTime = 0;
+        dataColumns.forEach(function(series){
+            var longtime = d3.max(stats, function(d){ return d[series];});
+            if (longtime > maxTime) {
+                maxTime = longtime;
+            }
+        });
+
+        console.log("Max Index " + maxIndex + " Time " + maxTime + "  and Count " + maxCount);
+
+    
+        var legend = d3.select("#plot").append("table")
+            .attr("align", "left");
+        legend.append("caption").text("Series Legend");
+    
+        var margin = {top: 20, right: 80, bottom: 30, left: 80},
+            width = 1000 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+    
+        var svg = d3.select("#plot").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        var xScale = d3.scale.linear()
+            .range([0, width])
+            .domain([0, maxIndex]);
+    
+        var yScale = d3.scale.linear()
+            .range([height, 0])
+            .domain([0, maxTime]);
+    
+        var cScale = d3.scale.linear()
+            .range([height, 0])
+            .domain([0, maxCount]);
+    
+        var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom");
+    
+        var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left");
+    
+        var cAxis = d3.svg.axis()
+            .scale(cScale)
+            .orient("right");
+    
+        svg.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis)/
+          //.append("text")
+          //.attr("x", width - margin.left)
+          //.attr("dy", "-5px")
+          //.style("text-anchor", "end")
+          //.text("Scale");
+
+        svg.append("g")
+          .attr("class", "y axis")
+          .call(yAxis);
+          //.append("text")
+          //.attr("transform", "rotate(-90)")
+          //.attr("y", 6)
+          //.attr("dy", "-4.5em")
+          //.style("text-anchor", "beginning")
+          //.text("Time (nanosecs)");
+
+        svg.append("g")
+          .attr("class", "c axis")
+          .attr("transform", "translate(" + width + ", 0)")
+          .call(cAxis);
+          //.append("text")
+          //.attr("transform", "rotate(-90)")
+          //.attr("y", 6)
+          //.attr("dy", "-1em")
+          //.style("text-anchor", "end")
+          //.text("Per second Run Count(limited)");
+
+        addSeries(countColumn, colours[colours.length - 1], stats, svg, xScale, cScale);
+
+        var legdata = [];
+        legdata.push([countColumn, colours[colours.length - 1]]);
+        for (var c = dataColumns.length - 1; c >= 0; c--) {
+            addSeries(dataColumns[c], colours[c], stats, svg, xScale, yScale);
+            legdata.unshift([dataColumns[c], colours[c]]);
+        }
+        for (var m = 0; m < data.models.length; m++) {
+            var model = data.models[m];
+            var fx = bigOFunctions[model.name];
+            if (fx === null || fx === undefined) {
+                continue;
+            }
+            var name = model.name.replace(/\W+/g, "");
+            var colour = colours[(m + dataColumns.length) % colours.length];
+
+            function yFunction (d) {
+                return fx(d[indexColumn], model.parameters);
+            }
+
+            addFunctionalSeries(name, colour, stats, svg, xScale, yScale, yFunction);
+            legdata.push([name, colour]);
+        }
+
+        var legrows = legend.append("tbody")
+            .selectAll("tr")
+            .data(legdata)
+            .enter()
+            .append("tr")
+            .attr("class", "legend")
+            .attr("series", function(d){return d[0];})
+            .attr("colour", function(d){return d[1];});
+    
+        legrows.append("td")
+            .text( function(d){return d[0];} );
+        legrows.append("td")
+            .attr("style", function(d){return "background-color: " + d[1];})
+            .append("input")
+            .attr("type", "checkbox")
+            .attr("checked", "true")
+            .attr("series", function(d){return d[0];} )
+            .attr("onChange", "toggleSeries(this.getAttribute('series'), this.checked);")
+            .append("label")
+            .text( function(d){return d[0];} );
+
+        //legrows.append("td")
+        //    .text("&nbsp;"));
+
+    }
+
+    function toggleSeries(series, state) {
+        console.log("Toggling " + series + " state " + state);
+        var plot = document.getElementById("series_" + series);
+        if (plot === null || plot === undefined) {
+            return;
+        }
+        if (state) {
+            plot.style.display = "block";
+        } else {
+            plot.style.display = "none";
+        }
+    }
+
+    function addSeries(series, colour, stats, svg, xScale, yScale) {
+        addFunctionalSeries(series, colour, stats, svg, xScale, yScale, function(d){return d[series];});
+    }
+
+    function addFunctionalSeries(series, colour, stats, svg, xScale, yScale, yFunction) {
+        var line = d3.svg.line()
+            .x(function(d) { return xScale(d[indexColumn]); })
+            .y(function(d) { return yScale(yFunction(d)); });
+
+        svg.append("path")
+            .datum(stats)
+            .attr("id", "series_" + series)
+            .attr("class", "line series_" + series)
+            .attr("style", "stroke: " + colour)
+            .attr("d", line);
+    }
+
+    </script>
+    
+    <script>
+
     function printTable(data) {
 
         var table = d3.select("#data").append("table");
+
+        table.append("caption").text(data["title"] + " Raw Data");
 
         // translate the field names in to column names
         var cols = [];
@@ -113,112 +290,25 @@
             .text(function(d){return d;});
     }
 
-    function printChart(data) {
+    </script>
+
+  </head>
+  
+  <body>
+    <h1>UScale Report - ${TITLE}</h1>
     
-        var stats = data.data;
-
-        var maxIndex = d3.max(stats, function(d){return d[indexColumn]});
-        var maxCount = d3.max(stats, function(d){return d[countColumn]});
-
-        var maxTime = 0;
-        dataColumns.forEach(function(series){
-            var longtime = d3.max(stats, function(d){ return d[series];});
-            if (longtime > maxTime) {
-                maxTime = longtime;
-            }
-        });
-
-        console.log("Max Index " + maxIndex + " Time " + maxTime + "  and Count " + maxCount);
+    <div id="plot"></div>
+    <hr>
+    <div id="data"></div>
 
     
-        var margin = {top: 20, right: 80, bottom: 30, left: 80},
-            width = 1000 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
-    
-        var svg = d3.select("#plot").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    
-        var xScale = d3.scale.linear()
-            .range([0, width])
-            .domain([0, maxIndex]);
-    
-        var yScale = d3.scale.linear()
-            .range([height, 0])
-            .domain([0, maxTime]);
-    
-        var cScale = d3.scale.linear()
-            .range([height, 0])
-            .domain([0, maxCount]);
-    
-        var xAxis = d3.svg.axis()
-            .scale(xScale)
-            .orient("bottom");
-    
-        var yAxis = d3.svg.axis()
-            .scale(yScale)
-            .orient("left");
-    
-        var cAxis = d3.svg.axis()
-            .scale(cScale)
-            .orient("right");
-    
-        svg.append("g")
-          .attr("class", "x axis")
-          .attr("transform", "translate(0," + height + ")")
-          .call(xAxis)
-          .append("text")
-          .attr("x", width - margin.left)
-          .attr("dy", "-5px")
-          .style("text-anchor", "end")
-          .text("Scale");
+    <script type="text/javascript">
 
-        svg.append("g")
-          .attr("class", "y axis")
-          .call(yAxis)
-          .append("text")
-          .attr("transform", "rotate(-90)")
-          .attr("y", 6)
-          .attr("dy", "-4.5em")
-          .style("text-anchor", "beginning")
-          .text("Time (nanosecs)");
-
-        svg.append("g")
-          .attr("class", "c axis")
-          .attr("transform", "translate(" + width + ", 0)")
-          .call(cAxis)
-          .append("text")
-          .attr("transform", "rotate(-90)")
-          .attr("y", 6)
-          .attr("dy", "-1em")
-          .style("text-anchor", "end")
-          .text("Per second Run Count(limited)");
-
-        addSeries(countColumn, colours[colours.length - 1], stats, svg, xScale, cScale);
-        for (var c = dataColumns.length - 1; c >= 0; c--) {
-            addSeries(dataColumns[c], colours[c], stats, svg, xScale, yScale);
-        }
-    
-    }
-
-    function addSeries(series, colour, stats, svg, xScale, yScale) {
-        var line = d3.svg.line()
-            .x(function(d) { return xScale(d[indexColumn]); })
-            .y(function(d) { return yScale(d[series]); });
-        svg.append("path")
-            .datum(stats)
-            .attr("class", "line")
-            .attr("style", "stroke: " + colour)
-            .attr("d", line);
-    }
-
-    printTable(data);
-    printChart(data);
+        printTable(data);
+        printChart(data);
 
     </script>
-    
+
     
     </body>
   </body>

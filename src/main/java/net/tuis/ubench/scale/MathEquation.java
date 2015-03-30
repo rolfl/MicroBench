@@ -2,6 +2,8 @@ package net.tuis.ubench.scale;
 
 import java.util.Arrays;
 import java.util.function.DoubleUnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 
 /**
  * Created by Simon on 3/27/2015.
@@ -47,5 +49,15 @@ public class MathEquation {
             params[i] = parameters[i];
         }
         return String.format(format, params) + " with precision " + rSquared;
+    }
+
+    public String toJSONString() {
+        String parms = DoubleStream.of(parameters)
+                .mapToObj(d -> String.format("%f", d))
+                .collect(Collectors.joining(", ", "[", "]"));
+        
+        String desc = String.format(format, DoubleStream.of(parameters).mapToObj(Double::valueOf).toArray()); 
+        return String.format("{name: \"%s\", description: \"%s\", parameters: %s, rsquare: %f}", 
+                format, desc, parms, rSquared);
     }
 }
