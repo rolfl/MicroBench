@@ -23,8 +23,8 @@ public class MathModel {
         return Arrays.copyOf(initialValues, initialValues.length);
     }
 
-    public Function<double[], DoubleUnaryOperator> getFunction() {
-        return function;
+    public DoubleUnaryOperator createFunction(double[] params) {
+        return function.apply(params);
     }
 
     public String getFormat() {

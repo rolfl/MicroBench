@@ -98,7 +98,7 @@ public class ScaleDetect {
             @Override
             public double[] apply(double[] doubles) {
                 double[] result = new double[x.length];
-                DoubleUnaryOperator func = model.getFunction().apply(doubles);
+                DoubleUnaryOperator func = model.createFunction(doubles);
                 for (int i = 0; i < x.length; i++) {
                     result[i] = y[i] - func.applyAsDouble(x[i]);
                 }
@@ -106,7 +106,7 @@ public class ScaleDetect {
             }
         };
         double[] results = newtonSolve(function, model.getInitialValues(), TOLERANCE);
-        DoubleUnaryOperator finalFunction = model.getFunction().apply(results);
+        DoubleUnaryOperator finalFunction = model.createFunction(results);
 
         double rSquared = calculateRSquared(finalFunction, x, y);
         MathEquation eq = new MathEquation(finalFunction, results, model.getFormat(), rSquared);
