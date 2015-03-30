@@ -1,7 +1,5 @@
 package net.tuis.ubench;
 
-import net.tuis.ubench.UScale;
-import net.tuis.ubench.UStats;
 import net.tuis.ubench.scale.MathEquation;
 import net.tuis.ubench.scale.MathModel;
 import net.tuis.ubench.scale.Models;
@@ -10,7 +8,6 @@ import org.apache.commons.math3.linear.*;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
@@ -18,6 +15,9 @@ import java.util.function.Function;
  * @author Simon Forsberg
  */
 public class ScaleDetect {
+
+    private static final double TOLERANCE = 1e-4;
+    private static final double H = 1e-5;
 
     public static double norm(RealVector data) {
         double norm = data.getNorm();
@@ -29,7 +29,6 @@ public class ScaleDetect {
         dx.set(tolerance + 1);
         int iterations = 0;
         int d = initial.length;
-        double h = 1e-4;
         double[] values = Arrays.copyOf(initial, initial.length);
 
         while (norm(dx) > tolerance) {
@@ -38,12 +37,12 @@ public class ScaleDetect {
             ArrayRealVector fxVector = new ArrayRealVector(fx);
             for (int i = 0; i < d; i++) {
                 double originalValue = values[i];
-                values[i] += h;
+                values[i] += H;
                 double[] fxi = feval(function, values);
                 values[i] = originalValue;
                 ArrayRealVector fxiVector = new ArrayRealVector(fxi);
                 RealVector result = fxiVector.subtract(fxVector);
-                result = result.mapDivide(h);
+                result = result.mapDivide(H);
                 df.setColumn(i, result.toArray());
             }
             dx = new RRQRDecomposition(df).getSolver().solve(fxVector.mapMultiply(-1));
@@ -52,6 +51,9 @@ public class ScaleDetect {
                 values[i] += dx.getEntry(i);
             }
             iterations++;
+            if (iterations % 100 == 0) {
+                tolerance *= 10;
+            }
         }
         System.out.println("solved in " + iterations + " iterations");
 
@@ -100,7 +102,7 @@ public class ScaleDetect {
                 return result;
             }
         };
-        double[] results = newtonSolve(function, model.getInitialValues(), 0.00001);
+        double[] results = newtonSolve(function, model.getInitialValues(), TOLERANCE);
         DoubleUnaryOperator finalFunction = model.getFunction().apply(results);
 
         double[] funcValues = function.apply(results);
