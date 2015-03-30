@@ -80,8 +80,11 @@ public class ScaleDetect {
             x[i] = stat.getIndex();
             y[i] = stat.getAverageRawNanos();
         }
+        return rank(x, y);
+    }
 
-        MathModel[] models = new MathModel[]{ Models.LINEAR, Models.LOG_N, Models.N_LOG_N, Models.N_SQUARED };
+    private static MathEquation[] rank(double[] x, double[] y) {
+        MathModel[] models = new MathModel[]{ Models.LINEAR, Models.CONSTANT, Models.LOG_N, Models.N_LOG_N, Models.N_SQUARED };
         // sort by reverse rsquared, or negative r-squared... note the `-` in `eq -> - eq.getRSquared()`
         return Arrays.stream(models).map(m -> detect(x, y, m)).sorted(Comparator.comparingDouble(eq -> - eq.getRSquared())).toArray(size -> new MathEquation[size]);
     }
@@ -105,7 +108,15 @@ public class ScaleDetect {
         double[] results = newtonSolve(function, model.getInitialValues(), TOLERANCE);
         DoubleUnaryOperator finalFunction = model.getFunction().apply(results);
 
-        double[] funcValues = function.apply(results);
+        double rSquared = calculateRSquared(finalFunction, x, y);
+        MathEquation eq = new MathEquation(finalFunction, results, model.getFormat(), rSquared);
+        System.out.println(Arrays.toString(results));
+        System.out.println(eq);
+        System.out.println();
+        return new MathEquation(finalFunction, results, model.getFormat(), rSquared);
+    }
+
+    private static double calculateRSquared(DoubleUnaryOperator finalFunction, double[] x, double[] y) {
         double yAverage = Arrays.stream(y).average().getAsDouble();
         double variance = 0;
         double residualSumOfSquares = 0;
@@ -122,13 +133,9 @@ public class ScaleDetect {
         double rSquared = 1 - residualSumOfSquares / variance;
         System.out.println(Arrays.toString(x));
         System.out.println(Arrays.toString(y));
-        System.out.println(Arrays.toString(results));
-        MathEquation eq = new MathEquation(finalFunction, results, model.getFormat(), rSquared);
         System.out.println(String.format("%f variance, %f residual sum, %f avg, %f rsquared, %f explained sum of squares",
                 variance, residualSumOfSquares, yAverage, rSquared, explainedSumOfSquares));
-        System.out.println(eq);
-        System.out.println();
-        return new MathEquation(finalFunction, results, model.getFormat(), rSquared);
+        return rSquared;
     }
 
     public static void main(String[] args) {
