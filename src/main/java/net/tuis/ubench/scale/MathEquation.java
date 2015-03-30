@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
 /**
- * Created by Simon on 3/27/2015.
+ * @author Simon Forsberg
  */
 public class MathEquation {
 

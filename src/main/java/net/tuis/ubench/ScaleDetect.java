@@ -15,7 +15,7 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
 /**
- * Created by Simon on 3/28/2015.
+ * @author Simon Forsberg
  */
 public class ScaleDetect {
 

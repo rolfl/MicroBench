@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  * scalability.
  * 
  * @author rolf
- * @author Simon
+ * @author Simon Forsberg
  *
  */
 public class UScale {

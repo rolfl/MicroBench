@@ -5,7 +5,7 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
 /**
- * Created by Simon on 3/27/2015.
+ * @author Simon Forsberg
  */
 public class MathModel {
 

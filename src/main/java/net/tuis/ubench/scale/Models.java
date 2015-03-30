@@ -3,7 +3,7 @@ package net.tuis.ubench.scale;
 import java.util.function.DoubleUnaryOperator;
 
 /**
- * Created by Simon on 3/27/2015.
+ * @author Simon Forsberg
  */
 public class Models {
 
