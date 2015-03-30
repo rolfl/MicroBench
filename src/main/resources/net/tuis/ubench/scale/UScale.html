@@ -60,8 +60,8 @@
 
     var bigOFunctions = {
         "%f * n + %f": function(x, parameters) {return x * parameters[0] + parameters[1];},
-        "%f * log n": function(x, parameters) {return parameters[0] * Math.log(x) / loge10;},
-        "%f * n log n": function(x, parameters) {return parameters[0] * x * Math.log(x) / loge10;},
+        "%f * log n": function(x, parameters) {return parameters[0] * Math.log10(x)},
+        "%f * n log n": function(x, parameters) {return parameters[0] * x * Math.log10(x);},
         "%f*n^2 + %f*n + %f": function(x, parameters) {return parameters[0] * x * x + parameters[1] * x + parameters[2];}
     };
 
@@ -128,7 +128,7 @@
         svg.append("g")
           .attr("class", "x axis")
           .attr("transform", "translate(0," + height + ")")
-          .call(xAxis)/
+          .call(xAxis);
           //.append("text")
           //.attr("x", width - margin.left)
           //.attr("dy", "-5px")
