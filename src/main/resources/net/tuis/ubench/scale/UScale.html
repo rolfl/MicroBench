@@ -168,7 +168,7 @@
           //.text("Time (nanosecs)");
 
         svg.append("g")
-          .attr("class", "c axis")
+          .attr("class", "c axis series_count")
           .attr("transform", "translate(" + width + ", 0)")
           .call(cAxis);
           //.append("text")
@@ -226,13 +226,24 @@
 
 		rescaler["control"]["rescale"] = function() {
 				var rsMax = 0;
+                for (var series in rescaler["active"]) {
+					if (rescaler["active"][series]) {
+                        svg.selectAll(".series_" + series).each(function(){
+                            this.style.display = "block";
+                        });
+                    } else {
+                        svg.selectAll(".series_" + series).each(function(){
+                            this.style.display = "none";
+                        });
+                    }
+                }
 				dataColumns.forEach(function(series){
 					if (rescaler["active"][series]) {
 						var longtime = d3.max(stats, function(d){ return d[series];});
 						if (longtime > rsMax) {
 							rsMax = longtime;
 						}
-					}
+                    }
 				});
 				if (rsMax > 0) {
 					yScale.domain([0, rsMax]);
@@ -262,17 +273,6 @@
 
     function toggleSeries(series, state) {
         console.log("Toggling " + series + " state " + state);
-        var plot = document.getElementById("series_" + series);
-        if (plot === null || plot === undefined) {
-            return;
-        }
-		
-        if (state) {
-            plot.style.display = "block";
-        } else {
-            plot.style.display = "none";
-        }
-
 		rescaler["active"][series] = state;
 		rescaler["control"].rescale();
     }
