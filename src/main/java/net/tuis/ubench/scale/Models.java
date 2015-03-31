@@ -32,6 +32,7 @@ public class Models {
                     format.append('^');
                     format.append(i);
                 }
+                format.append(" + ");
             }
         }
         format.append("%f");
