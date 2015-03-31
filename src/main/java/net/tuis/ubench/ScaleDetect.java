@@ -80,7 +80,9 @@ public class ScaleDetect {
     }
 
     private static MathEquation[] rank(double[] x, double[] y) {
-        MathModel[] models = new MathModel[]{ Models.LINEAR, Models.CONSTANT, Models.LOG_N, Models.N_LOG_N, Models.N_SQUARED };
+        MathModel[] models = new MathModel[]{ Models.createPolynom(0), Models.createPolynom(1),
+                Models.createPolynom(2), Models.createPolynom(3), Models.createPolynom(4),
+                Models.LOG_N, Models.N_LOG_N, Models.N_SQUARED };
         // sort by reverse rsquared, or negative r-squared... note the `-` in `eq -> - eq.getRSquared()`
         return Arrays.stream(models).map(m -> detect(x, y, m)).sorted(Comparator.comparingDouble(eq -> - eq.getRSquared())).toArray(size -> new MathEquation[size]);
     }
