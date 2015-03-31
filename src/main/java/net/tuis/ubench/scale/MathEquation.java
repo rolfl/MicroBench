@@ -60,4 +60,8 @@ public class MathEquation {
         return String.format("{name: \"%s\", description: \"%s\", parameters: %s, rsquare: %f}", 
                 format, desc, parms, rSquared);
     }
+
+    public boolean isValid() {
+        return Math.abs(parameters[0]) >= 0.001;
+    }
 }

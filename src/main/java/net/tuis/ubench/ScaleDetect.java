@@ -63,7 +63,7 @@ public class ScaleDetect {
     }
 
     public static MathEquation detect(UScale scale) {
-        return rank(scale)[0];
+        return Arrays.stream(rank(scale)).filter(eq -> eq.isValid()).findFirst().get();
     }
 
     public static MathEquation[] rank(UScale scale) {
