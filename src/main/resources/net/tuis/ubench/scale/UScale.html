@@ -44,6 +44,7 @@
     <script type="text/javascript">
     
     var data = ${DATA};
+
     var indexColumn = "index";
     var countColumn = "count";
     var dataColumns = [];
@@ -52,6 +53,7 @@
 
     data.fields.forEach(function(series) {
         if (series != indexColumn && series != countColumn) {
+			series.active = true;
             dataColumns.push(series);
         }
     });
@@ -69,6 +71,20 @@
     </script>
 
     <script>
+	
+	var rescaler = {
+		control: {},
+		active: {},
+		paths: {}
+	};
+	
+	function getMax(stats, datacols) {
+		var maxTime = 0;
+		datacols.forEach(function (series){
+			
+		});
+		return maxTime;
+	}
 
     function printChart(data) {
     
@@ -91,6 +107,11 @@
         var legend = d3.select("#plot").append("table")
             .attr("align", "left");
         legend.append("caption").text("Series Legend");
+        var leghead = legend.append("thead").append("tr");
+        leghead.append("th").text("Series"); 
+        leghead.append("th").text("Description"); 
+        leghead.append("th").text("R-Squared"); 
+        leghead.append("th").text("Enabled"); 
     
         var margin = {top: 20, right: 80, bottom: 30, left: 80},
             width = 1000 - margin.left - margin.right,
@@ -137,7 +158,7 @@
           //.text("Scale");
 
         svg.append("g")
-          .attr("class", "y axis")
+          .attr("class", "y axis yaxis")
           .call(yAxis);
           //.append("text")
           //.attr("transform", "rotate(-90)")
@@ -160,10 +181,10 @@
         addSeries(countColumn, colours[colours.length - 1], stats, svg, xScale, cScale);
 
         var legdata = [];
-        legdata.push([countColumn, colours[colours.length - 1]]);
+        legdata.push([countColumn, colours[colours.length - 1], "Capped @ 1,000,000", ""]);
         for (var c = dataColumns.length - 1; c >= 0; c--) {
             addSeries(dataColumns[c], colours[c], stats, svg, xScale, yScale);
-            legdata.unshift([dataColumns[c], colours[c]]);
+            legdata.unshift([dataColumns[c], colours[c], "", ""]);
         }
         for (var m = 0; m < data.models.length; m++) {
             var model = data.models[m];
@@ -174,12 +195,8 @@
             var name = model.name.replace(/\W+/g, "");
             var colour = colours[(m + dataColumns.length) % colours.length];
 
-            function yFunction (d) {
-                return fx(d[indexColumn], model.parameters);
-            }
-
-            addFunctionalSeries(name, colour, stats, svg, xScale, yScale, yFunction);
-            legdata.push([name, colour]);
+            addModelSeries(name, colour, stats, svg, xScale, yScale, fx, model.parameters);
+            legdata.push([name, colour, model.description, model.rsquare]);
         }
 
         var legrows = legend.append("tbody")
@@ -194,6 +211,10 @@
         legrows.append("td")
             .text( function(d){return d[0];} );
         legrows.append("td")
+            .text( function(d){return d[2];} );
+        legrows.append("td")
+            .text( function(d){return d[3];} );
+        legrows.append("td")
             .attr("style", function(d){return "background-color: " + d[1];})
             .append("input")
             .attr("type", "checkbox")
@@ -203,8 +224,39 @@
             .append("label")
             .text( function(d){return d[0];} );
 
-        //legrows.append("td")
-        //    .text("&nbsp;"));
+		rescaler["control"]["rescale"] = function() {
+				var rsMax = 0;
+				dataColumns.forEach(function(series){
+					if (rescaler["active"][series]) {
+						var longtime = d3.max(stats, function(d){ return d[series];});
+						if (longtime > rsMax) {
+							rsMax = longtime;
+						}
+					}
+				});
+				if (rsMax > 0) {
+					yScale.domain([0, rsMax]);
+					svg.select(".yaxis").transition().duration(500).ease("sin-in-out").call(yAxis);
+					svg.selectAll("path")
+						.transition()
+						.duration(500)
+						.ease("sin-in-out")
+						.attr("d", function(d,i) {
+							if (this.id === null || this.id === undefined || this.id.length == 0) {
+								return this.getAttribute("d");
+							}
+							var s = this.id.replace(/series_/, "");
+							var ln = rescaler["paths"][s];
+							return ln(d,i);
+						});
+				}
+			};
+		rescaler["control"]["axis"] = yAxis;
+		rescaler["control"]["scale"] = yScale;
+		
+        dataColumns.forEach(function(series){
+            rescaler["active"][series] = true;
+        });
 
     }
 
@@ -214,27 +266,40 @@
         if (plot === null || plot === undefined) {
             return;
         }
+		
         if (state) {
             plot.style.display = "block";
         } else {
             plot.style.display = "none";
         }
+
+		rescaler["active"][series] = state;
+		rescaler["control"].rescale();
     }
 
     function addSeries(series, colour, stats, svg, xScale, yScale) {
         addFunctionalSeries(series, colour, stats, svg, xScale, yScale, function(d){return d[series];});
     }
 
-    function addFunctionalSeries(series, colour, stats, svg, xScale, yScale, yFunction) {
-        var line = d3.svg.line()
-            .x(function(d) { return xScale(d[indexColumn]); })
-            .y(function(d) { return yScale(yFunction(d)); });
+    function addModelSeries(series, colour, stats, svg, xScale, yScale, fn, parameters) {
+        addFunctionalSeries(series, colour, stats, svg, xScale, yScale, function(d){return fn(d[indexColumn], parameters);});
+    }
 
+    function addFunctionalSeries(series, colour, stats, svg, xScale, yScale, yFunction) {
+		var fn = yFunction;
+        var line = d3.svg.line()
+            .interpolate("monotone")
+            .x(function(d) { return xScale(d[indexColumn]); })
+            .y(function(d) { return yScale(fn(d)); });
+
+		rescaler["paths"][series] = line;
+		
         svg.append("path")
             .datum(stats)
             .attr("id", "series_" + series)
             .attr("class", "line series_" + series)
             .attr("style", "stroke: " + colour)
+            .attr("series", series)
             .attr("d", line);
     }
 
