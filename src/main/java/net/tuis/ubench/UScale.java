@@ -72,8 +72,12 @@ public class UScale {
                         "Scale %4d -> %8d (count %d, threshold %d)", 
                         sr.getIndex(), sr.getAverageRawNanos(), sr.getCount(), NANO_TICK))
                 .forEach(System.out::println);
-        MathEquation bestFit = ScaleDetect.detect(this);
+        MathEquation bestFit = determineBestFit();
         System.out.println("Best fit is: " + bestFit);
+    }
+
+    public MathEquation determineBestFit() {
+        return ScaleDetect.detect(this);
     }
 
     /**
