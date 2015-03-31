@@ -1,5 +1,7 @@
 package net.tuis.ubench;
 
+import net.tuis.ubench.scale.MathEquation;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,7 +72,8 @@ public class UScale {
                         "Scale %4d -> %8d (count %d, threshold %d)", 
                         sr.getIndex(), sr.getAverageRawNanos(), sr.getCount(), NANO_TICK))
                 .forEach(System.out::println);
-        ScaleDetect.detect(this);
+        MathEquation bestFit = ScaleDetect.detect(this);
+        System.out.println("Best fit is: " + bestFit);
     }
 
     /**
