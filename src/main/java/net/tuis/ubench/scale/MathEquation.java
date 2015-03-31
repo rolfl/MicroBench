@@ -14,8 +14,10 @@ public class MathEquation {
     private final double[] parameters;
     private final String format;
     private final double rSquared;
+    private final MathModel model;
 
-    public MathEquation(DoubleUnaryOperator equation, double[] parameters, String format, double rSquared) {
+    public MathEquation(MathModel model, DoubleUnaryOperator equation, double[] parameters, String format, double rSquared) {
+        this.model = model;
         this.equation = equation;
         this.parameters = parameters;
         this.format = format;
@@ -40,6 +42,10 @@ public class MathEquation {
 
     public double getRSquared() {
         return rSquared;
+    }
+
+    public MathModel getModel() {
+        return model;
     }
 
     @Override

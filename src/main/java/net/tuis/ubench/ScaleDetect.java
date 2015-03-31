@@ -107,11 +107,11 @@ public class ScaleDetect {
         DoubleUnaryOperator finalFunction = model.createFunction(results);
 
         double rSquared = calculateRSquared(finalFunction, x, y);
-        MathEquation eq = new MathEquation(finalFunction, results, model.getFormat(), rSquared);
         System.out.println(Arrays.toString(results));
         System.out.println(eq);
         System.out.println();
-        return new MathEquation(finalFunction, results, model.getFormat(), rSquared);
+        MathEquation eq = new MathEquation(model, finalFunction, results, model.getFormat(), rSquared);
+        return eq;
     }
 
     private static double calculateRSquared(DoubleUnaryOperator finalFunction, double[] x, double[] y) {
