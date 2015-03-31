@@ -37,6 +37,9 @@ public class ExampleScales {
                 data -> linear(data),
                 scale -> scale, true)
            .reportHTML("Linear", Paths.get("output/Linear.html"));
+
+        UScale.consumer(data -> bubbleSort(data), scale -> randomData(scale), false)
+            .report();
         
         if (!Boolean.getBoolean("DOALL")) {
             return;
@@ -59,6 +62,22 @@ public class ExampleScales {
                 .map(scale -> String.format("Scale %d -> created %d", scale, arrayCounts.get(scale).get()))
                 .forEach(System.out::println);
         
+    }
+
+    private static void bubbleSort(int[] data) {
+        for (int i = 0; i < data.length; i++) {
+            for (int j = 0; j < data.length - 1; j++) {
+                if (i != j) {
+                    int a = data[j];
+                    int b = data[j + 1];
+                    if (a > b) {
+                        int temp = data[j];
+                        data[j] = data[j + 1];
+                        data[j + 1] = temp;
+                    }
+                }
+            }
+        }
     }
 
 
