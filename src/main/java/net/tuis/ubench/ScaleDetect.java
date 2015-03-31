@@ -80,9 +80,9 @@ public class ScaleDetect {
     }
 
     private static MathEquation[] rank(double[] x, double[] y) {
-        MathModel[] models = new MathModel[]{ Models.createPolynom(0), Models.createPolynom(1),
-                Models.createPolynom(2), Models.createPolynom(3), Models.createPolynom(4),
-                Models.LOG_N, Models.N_LOG_N, Models.N_SQUARED };
+        MathModel[] models = new MathModel[]{ Models.CONSTANT, Models.LINEAR,
+                Models.N_SQUARED, Models.createPolynom(3), Models.createPolynom(4),
+                Models.LOG_N, Models.N_LOG_N, Models.EXPONENTIAL };
         // sort by reverse rsquared, or negative r-squared... note the `-` in `eq -> - eq.getRSquared()`
         return Arrays.stream(models).map(m -> detect(x, y, m)).sorted(Comparator.comparingDouble(eq -> - eq.getRSquared())).toArray(size -> new MathEquation[size]);
     }
@@ -137,11 +137,11 @@ public class ScaleDetect {
     }
 
     public static void main(String[] args) {
-        detect(new double[]{ 42, 107, 73, 120 }, new double[]{ 511, 312, 400, 242 }, Models.N_SQUARED);
+        detect(new double[]{ 42, 107, 73, 120 }, new double[]{ 511, 312, 400, 242 }, Models.createPolynom(2));
 
         detect(new double[]{ 1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0, 512.0, 1024.0, 2048.0, 4096.0, 8192.0, 16384.0, 32768.0, 65536.0, 131072.0, 262144.0, 524288.0 },
                 new double[]{ 905.0, 901.0, 939.0, 927.0, 920.0, 898.0, 884.0, 861.0, 852.0, 864.0, 869.0, 867.0, 866.0, 867.0, 857.0, 857.0, 854.0, 855.0, 872.0, 865.0 },
-                Models.LINEAR);
+                Models.createPolynom(1));
 
         detect(new double[]{ 1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0, 512.0, 1024.0, 2048.0, 4096.0, 8192.0, 16384.0, 32768.0, 65536.0, 131072.0, 262144.0, 524288.0 },
                new double[]{ 857.0, 860.0, 898.0, 975.0, 993.0, 1601.0, 1530.0, 2947.0, 6106.0, 16111.0, 35937.0, 80497.0, 184819.0, 390424.0, 847658.0, 1820366.0, 4095873.0, 8463674.0, 17483933, 39126742 },
