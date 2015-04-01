@@ -63,19 +63,27 @@ public class ScaleDetect {
     }
 
     public static MathEquation detect(UScale scale) {
-        return Arrays.stream(rank(scale)).filter(eq -> eq.isValid()).findFirst().get();
+        return Arrays.stream(rank(scale))
+                .filter(eq -> eq.isValid())
+                .findFirst()
+                .orElse(fit(scale, Models.CONSTANT)); // if no valid is found, it is because of constant data
+    }
+
+    private static MathEquation fit(UScale scale, MathModel model) {
+        return detect(extractX(scale), extractY(scale), model);
+    }
+
+    private static double[] extractX(UScale scale) {
+        return scale.getStats().stream().mapToDouble(st -> st.getIndex()).toArray();
+    }
+
+    private static double[] extractY(UScale scale) {
+        return scale.getStats().stream().mapToDouble(st -> st.getFastestNanos()).toArray();
     }
 
     public static MathEquation[] rank(UScale scale) {
-        List<UStats> stats = scale.getStats();
-
-        double[] x = new double[stats.size()];
-        double[] y = new double[stats.size()];
-        for (int i = 0; i < stats.size(); i++) {
-            UStats stat = stats.get(i);
-            x[i] = stat.getIndex();
-            y[i] = stat.getAverageRawNanos();
-        }
+        double[] x = extractX(scale);
+        double[] y = extractY(scale);
         return rank(x, y);
     }
 

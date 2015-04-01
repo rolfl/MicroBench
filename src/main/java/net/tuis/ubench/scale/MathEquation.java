@@ -68,6 +68,6 @@ public class MathEquation {
     }
 
     public boolean isValid() {
-        return Math.abs(parameters[0]) >= 0.001;
+        return Math.abs(parameters[0]) >= 0.001 && rSquared != Double.NEGATIVE_INFINITY && !Double.isNaN(rSquared);
     }
 }
