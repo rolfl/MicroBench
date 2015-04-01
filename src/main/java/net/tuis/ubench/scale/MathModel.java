@@ -30,4 +30,9 @@ public class MathModel {
     public String getFormat() {
         return format;
     }
+
+    @Override
+    public String toString() {
+        return format;
+    }
 }
