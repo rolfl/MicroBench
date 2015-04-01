@@ -58,7 +58,6 @@ public class ScaleDetect {
                 tolerance *= 10;
             }
         }
-        System.out.println("solved in " + iterations + " iterations");
         return values;
     }
 
@@ -115,9 +114,6 @@ public class ScaleDetect {
         DoubleUnaryOperator finalFunction = model.createFunction(results);
 
         double rSquared = calculateRSquared(finalFunction, x, y);
-        System.out.println(Arrays.toString(results));
-        System.out.println(eq);
-        System.out.println();
         MathEquation eq = new MathEquation(model, finalFunction, results, model.getFormat(), rSquared);
         return eq;
     }
@@ -137,10 +133,6 @@ public class ScaleDetect {
         }
 
         double rSquared = 1 - residualSumOfSquares / variance;
-        System.out.println(Arrays.toString(x));
-        System.out.println(Arrays.toString(y));
-        System.out.println(String.format("%f variance, %f residual sum, %f avg, %f rsquared, %f explained sum of squares",
-                variance, residualSumOfSquares, yAverage, rSquared, explainedSumOfSquares));
         return rSquared;
     }
 
