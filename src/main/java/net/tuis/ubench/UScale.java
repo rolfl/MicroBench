@@ -80,6 +80,10 @@ public class UScale {
         return ScaleDetect.detect(this);
     }
 
+    public MathEquation[] fitEquations() {
+        return ScaleDetect.rank(this);
+    }
+
     /**
      * Get the data as JSON data in an array format (<code>[ [scale,nanos], ...]</code>
      * @param title The name to apply to this data.
