@@ -8,11 +8,14 @@ import java.util.function.Function;
  */
 public class Models {
 
-    public static final MathModel EXPONENTIAL = new MathModel("%f ^ n", params -> x -> Math.pow(params[0], x), new double[]{ 2 });
+    public static final MathModel EXPONENTIAL = new MathModel("O(a^n)", "%f ^ n",
+            params -> x -> Math.pow(params[0], x), new double[]{ 2 });
 
-    public static final MathModel N_LOG_N = new MathModel("%f * n log n", params -> x -> params[0] * x * Math.log10(x), new double[]{ 1 });
+    public static final MathModel N_LOG_N = new MathModel("O(n log n)", "%f * n log n",
+            params -> x -> params[0] * x * Math.log10(x), new double[]{ 1 });
 
-    public static final MathModel LOG_N = new MathModel("%f * log n", params -> x -> params[0] * Math.log10(x), new double[]{ 1 });
+    public static final MathModel LOG_N = new MathModel("O(log n)", "%f * log n",
+            params -> x -> params[0] * Math.log10(x), new double[]{ 1 });
 
     public static final MathModel CONSTANT = createPolynom(0);
     public static final MathModel LINEAR = createPolynom(1);
@@ -46,7 +49,19 @@ public class Models {
                 };
             }
         };
-        return new MathModel(format.toString(), equation, params);
+        String name;
+        switch (degree) {
+            case 0:
+                name = "O(1)";
+                break;
+            case 1:
+                name = "O(n)";
+                break;
+            default:
+                name = "O(n^" + degree + ")";
+                break;
+        }
+        return new MathModel(name, format.toString(), equation, params);
     }
 
     private static DoubleUnaryOperator nSquared(double a, double b, double c) {

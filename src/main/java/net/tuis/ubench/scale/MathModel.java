@@ -12,8 +12,10 @@ public class MathModel {
     private final Function<double[], DoubleUnaryOperator> function;
     private final double[] initialValues;
     private final String format;
+    private final String name;
 
-    public MathModel(String format, Function<double[], DoubleUnaryOperator> math, double[] initialValues) {
+    public MathModel(String name, String format, Function<double[], DoubleUnaryOperator> math, double[] initialValues) {
+        this.name = name;
         this.function = math;
         this.initialValues = initialValues;
         this.format = format;
@@ -29,6 +31,10 @@ public class MathModel {
 
     public String getFormat() {
         return format;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override
