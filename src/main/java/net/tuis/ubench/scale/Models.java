@@ -23,6 +23,9 @@ public class Models {
 
 
     public static MathModel createPolynom(int degree) {
+        if (degree < 0) {
+            throw new IllegalArgumentException("Degree must be positive");
+        }
         double[] params = new double[degree + 1];
         params[0] = 1;
         StringBuilder format = new StringBuilder();
