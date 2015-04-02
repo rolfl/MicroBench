@@ -18,6 +18,9 @@ public class ScaleDetect {
 
     private static final double TOLERANCE = 1e-4;
     private static final double H = 1e-5;
+    
+    private static final Comparator<MathEquation> ranking = Comparator.comparingInt((MathEquation eq) -> eq.isValid() ? 0 : 1)
+            .thenComparingDouble(eqb -> - eqb.getRSquared());
 
     /**
      * Finding the best fit using least-squares method for an equation system
@@ -91,7 +94,7 @@ public class ScaleDetect {
                 Models.N_SQUARED, Models.createPolynom(3), Models.createPolynom(4),
                 Models.LOG_N, Models.N_LOG_N, Models.EXPONENTIAL };
         // sort by reverse rsquared, or negative r-squared... note the `-` in `eq -> - eq.getRSquared()`
-        return Arrays.stream(models).map(m -> detect(x, y, m)).sorted(Comparator.comparingDouble(eq -> - eq.getRSquared())).toArray(size -> new MathEquation[size]);
+        return Arrays.stream(models).map(m -> detect(x, y, m)).sorted(ranking).toArray(size -> new MathEquation[size]);
     }
 
     static MathEquation detect(double[] x, double[] y, MathModel model) {

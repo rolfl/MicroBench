@@ -5,6 +5,7 @@ import net.tuis.ubench.scale.MathEquation;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,14 +67,29 @@ public class UScale {
      * Generate and print (System.out) the scalability report.
      */
     public void report() {
-        stats.stream()
+        try (Writer w = new NonClosingSystemOut()) {
+            report(w);
+        } catch (IOException e) {
+            throw new IllegalStateException("Should never be an exception writing to System.out", e);
+        }
+    }
+    
+    /**
+     * Generate and print (System.out) the scalability report.
+     * @param writer The writer to write the report to
+     * @throws IOException in the event that the writer throws one. 
+     */
+    public void report(Writer writer) throws IOException {
+        String report = stats.stream()
                 .sorted(Comparator.comparingInt(UStats::getIndex))
                 .map(sr -> String.format(
                         "Scale %4d -> %8d (count %d, threshold %d)", 
                         sr.getIndex(), sr.getAverageRawNanos(), sr.getCount(), NANO_TICK))
-                .forEach(System.out::println);
+                .collect(Collectors.joining("\n"));
         MathEquation bestFit = determineBestFit();
-        System.out.println("Best fit is: " + bestFit);
+        writer.write(report);
+        writer.write("Best fit is: " + bestFit + "\n");
+        writer.flush();
     }
 
     public MathEquation determineBestFit() {

@@ -63,8 +63,8 @@ public class MathEquation {
                 .collect(Collectors.joining(", ", "[", "]"));
         
         String desc = String.format(format, DoubleStream.of(parameters).mapToObj(Double::valueOf).toArray()); 
-        return String.format("{name: \"%s\", description: \"%s\", parameters: %s, rsquare: %f}", 
-                format, desc, parms, rSquared);
+        return String.format("{name: \"%s\", valid: %s, format: \"%s\", description: \"%s\", parameters: %s, rsquare: %f}", 
+                model.getName(), isValid() ? "true" : "false", format, desc, parms, rSquared);
     }
 
     public boolean isValid() {
