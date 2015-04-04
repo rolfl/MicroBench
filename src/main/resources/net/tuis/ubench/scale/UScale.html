@@ -11,16 +11,10 @@
             text-align: center;
         }
 
-        #data {
-            display: none;
-            margin: 0 auto;
-        }
-
-    
         #data table {
+	    display: none;
             font-size: 12px;
             border-collapse: collapse;
-            border: 2px black solid;
         }
 
         #data th {
@@ -34,6 +28,14 @@
             font-family: monospace;
             text-align: right;
         }
+
+        .showdata::before {
+            content: "\25B6 Show ";
+        }
+        .hidedata::before {
+            content: "\25BC Hide ";
+        }
+
 
         #triptych {
             display: block;
@@ -100,6 +102,10 @@
             border: none;
         }
 
+        .details td:first-child {
+            padding-left: 3em;
+	}
+
         .details td:last-child {
             width: 100%;
             padding-right: 5px;
@@ -117,13 +123,6 @@
             background-color: white;
         }
 
-        .showdata {
-            content: "\9658 Show Data";
-        }
-        .hidedata {
-            content: "\9658 Show Data";
-        }
-
     </style>
 
     <script src="http://d3js.org/d3.v3.js" charset="utf-8"></script>
@@ -139,6 +138,7 @@
         <div id="detail">
             <table class="details">
               <tr>
+                <td id="seriesColour">&nbsp;</td>
                 <td>
                   <label for="seriesName">Series</label>
                   <input id="seriesName" type="text" size="15" readonly="readonly" placeholder="Choose Series" >
@@ -157,7 +157,7 @@
 
     </div>
     <hr>
-    <div id="viewdata" class="showdata"></div>
+    <div id="viewdata" class="showdata" onClick="uscale.code.toggleData(this);" >Data</div>
     <div id="data"></div>
 
     
@@ -187,7 +187,7 @@
 
         function buildTable(table, title, fields, data) {
 
-            table.style("align","left");
+            //table.style("align","left");
 
             table.append("caption").text(title + " Raw Data");
 
@@ -249,6 +249,12 @@ ${DATA},
                 "O(n^4)": function(x, parameters) {return parameters[0] * x * x * x * x + parameters[1] * x * x * x + parameters[2] * x * x + parameters[3] * x + parameters[4];},
             },
 
+            scales: {
+                time: [[1, "ns"],[1000, "us"],[1000000, "ms"], [1000000000, "s"]],
+                count: [[1, ""],[1000, "k"],[1000000, "m"], [1000000000, "b"]],
+                scale: [[1, ""],[1024, "K"],[1024 * 1024, "M"], [1024 * 1024 * 1024, "G"]]
+            },
+
             data: {
                 colours: ["crimson", "darkblue", "blueviolet", "darkgreen", 
                 		  "darkslategray", "darkgoldenrod", "maroon", "saddlebrown",
@@ -302,6 +308,7 @@ ${DATA},
                 uscale.code.normalizeData();
 
                 uscale.ddd.table = d3.select("#data").append("table");
+
                 buildTable(uscale.ddd.table, uscale.raw.title, uscale.raw.fields, uscale.raw.data);
 
                 uscale.ddd.legend = d3.select("#legend").append("table");
@@ -408,6 +415,7 @@ ${DATA},
                         .append("tr")
                         .attr("title", function(key){return uscale.data.series[key]["description"];})
                         .attr("series", function(key){return key;})
+			.style("background-color", "white")
                         .on("click", function(){uscale.code.selectSeries(this.getAttribute('series'));});
 
                     // add a td for each key/column combo
@@ -434,7 +442,7 @@ ${DATA},
                     d3.select("#seriesDetail").attr("value", series["description"]);
                     d3.selectAll("#legend tr").transition().style("background-color", "white").style("font-weight", "normal");
                     d3.selectAll("#legend tr[series='" + seriesKey + "']").transition().style("font-weight", "bold").style("background-color", series["colour"]);
-                    d3.selectAll(".details").transition().style("background-color", series["colour"]);
+                    d3.selectAll("#seriesColour").transition().style("background-color", series["colour"]);
                     console.log("selecting " + seriesKey);
                 },
 
@@ -572,18 +580,30 @@ ${DATA},
 
                 },
 
+                tickFormat: function(axis, max, candidates) {
+                    var scale = candidates.filter(function(s,i) {
+                        if (i == candidates.length - 1) {
+                            return true;
+                        }
+                        if (max / s[0] > 100) {
+                            return false;
+                        }
+                        return true;
+                    })[0];
+                    var axisFormat = d3.format(".1f");
+                    axis.tickFormat(function(d) { return axisFormat(d / scale[0]) + scale[1]; });
+                },
+
                 buildAxes: function() {
 
-                    var yaxisFormat = d3.format(".0f");
-                    var caxisFormat = d3.format(".0f");
-
                     uscale.ddd.xAxis = d3.svg.axis().scale(uscale.ddd.xScale).orient("bottom");
+                    uscale.code.tickFormat(uscale.ddd.xAxis, uscale.data.maxindex, uscale.scales.scale);
 
-                    uscale.ddd.yAxis = d3.svg.axis().scale(uscale.ddd.yScale).orient("left")
-                            .tickFormat(function(d) { return yaxisFormat(d / 1000000) + "ms"; });
+                    uscale.ddd.yAxis = d3.svg.axis().scale(uscale.ddd.yScale).orient("left");
+                    uscale.code.tickFormat(uscale.ddd.yAxis, uscale.data.maxenabled, uscale.scales.time);
 
-                    uscale.ddd.cAxis = d3.svg.axis().scale(uscale.ddd.cScale).orient("right")
-                            .tickFormat(function(d) { return caxisFormat(d / 1000) + "k"; });
+                    uscale.ddd.cAxis = d3.svg.axis().scale(uscale.ddd.cScale).orient("right");
+                    uscale.code.tickFormat(uscale.ddd.cAxis, uscale.data.maxcount, uscale.scales.count);
 
                     uscale.ddd.axisResize = function() {
                         // if the chart size changes, make the following adjustments.
@@ -635,6 +655,8 @@ ${DATA},
 
                         // if the data scales change, make the following adjustments.
 
+                        uscale.code.tickFormat(uscale.ddd.yAxis, uscale.data.maxenabled, uscale.scales.time);
+
                         uscale.ddd.xScale.domain([0, uscale.data.maxindex]);
                         uscale.ddd.yScale.domain([0, uscale.data.maxenabled]);
                         uscale.ddd.cScale.domain([0, uscale.data.maxcount]);
@@ -665,6 +687,15 @@ ${DATA},
 
                     });
 
+                },
+
+                toggleData: function() {
+                    var dbox = d3.select("#viewdata");
+                    var show = dbox.classed("showdata");
+
+                    dbox.classed("showdata", !show);
+                    dbox.classed("hidedata", show);
+                    d3.select("#data table").style("display", show ? "block" : "none");
                 },
 
                 toggleSeries: function(series, state) {
