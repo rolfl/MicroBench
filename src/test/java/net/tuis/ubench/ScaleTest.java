@@ -3,6 +3,7 @@ package net.tuis.ubench;
 import net.tuis.ubench.scale.MathEquation;
 import net.tuis.ubench.scale.Models;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.nio.file.Paths;
@@ -17,7 +18,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class ScaleTest {
     
-    static {
+    @BeforeClass
+    public static void setup() {
         UUtils.setStandaloneLogging(Level.FINE);
     }
     
