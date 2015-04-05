@@ -1,10 +1,6 @@
 package net.tuis.ubench;
 
-import net.tuis.ubench.scale.MathEquation;
-
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -17,11 +13,14 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.LongStream;
 import java.util.stream.Stream;
+
+import net.tuis.ubench.scale.MathEquation;
 
 /**
  * Factory class and reporting instances that allow functions to be tested for
@@ -33,9 +32,10 @@ import java.util.stream.Stream;
  */
 public class UScale {
     
-    private static final long NANO_TICK = computeTick();
+    private static final Logger LOGGER = UUtils.getLogger(UScale.class);
+    
     private static final int SCALE_LIMIT = 12_000_000;
-
+    
     @FunctionalInterface
     private interface TaskRunnerBuilder {
         TaskRunner build(String name, int scale);
@@ -47,22 +47,6 @@ public class UScale {
         this.stats = stats;
     }
     
-    private static final long singleTick() {
-        
-        final long start = System.nanoTime();
-        long end = start;
-        while (end == start) {
-            end = System.nanoTime();
-        }
-//        System.out.printf("Nano Resolution %d\n", end - start);
-        return end - start;
-        
-    }
-
-    private static long computeTick() {
-        return LongStream.range(0, 1000).map(i -> singleTick()).min().getAsLong();
-    }
-
     /**
      * Generate and print (System.out) the scalability report.
      */
@@ -84,7 +68,7 @@ public class UScale {
                 .sorted(Comparator.comparingInt(UStats::getIndex))
                 .map(sr -> String.format(
                         "Scale %4d -> %8d (count %d, threshold %d)", 
-                        sr.getIndex(), sr.getAverageRawNanos(), sr.getCount(), NANO_TICK))
+                        sr.getIndex(), sr.getAverageRawNanos(), sr.getCount(), UUtils.getNanoTick()))
                 .collect(Collectors.joining("\n"));
         MathEquation bestFit = determineBestFit();
         writer.write(report);
@@ -116,21 +100,7 @@ public class UScale {
         String models = Stream.of(ScaleDetect.rank(this)).map(me -> me.toJSONString()).collect(Collectors.joining(",\n    ", "[\n    ", "\n  ]"));
         
         return String.format("{ title: \"%s\",\n  nano_tick: %d,\n  models: %s,\n  fields: %s,\n  data: %s\n}",
-                title, NANO_TICK, models, fields, rawdata);
-    }
-    
-    private static String readResource(String path) {
-        try (InputStream is = UScale.class.getClassLoader().getResourceAsStream(path);) {
-            int len = 0;
-            byte[] buffer = new byte[2048];
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            while ((len = is.read(buffer)) >= 0) {
-                baos.write(buffer, 0, len);
-            }
-            return new String(baos.toByteArray(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to read class loaded stream " + path, e);
-        }
+                title, UUtils.getNanoTick(), models, fields, rawdata);
     }
     
     /**
@@ -139,23 +109,22 @@ public class UScale {
      * @param target the destination to store the HTML document at.
      * @throws IOException if there is a problem writing to the target path
      */
-    public void reportHTML(String title, Path target) throws IOException {
+    public void reportHTML(final String title, final Path target) throws IOException {
         
         Files.createDirectories(target.toAbsolutePath().getParent());
         
-        System.out.println("Preparing HTML Report " + target);
+        LOGGER.info(() -> "Preparing HTML Report '" + title + "' to path: " + target);
         
-        String html = readResource("net/tuis/ubench/scale/UScale.html");
+        String html = UUtils.readResource("net/tuis/ubench/scale/UScale.html");
         Map<String, String> subs = new HashMap<>();
         subs.put("DATA", toJSONString(title));
-        System.out.println("Stats Loaded " + target);
         
         subs.put("TITLE", title);
         for (Map.Entry<String, String> me : subs.entrySet()) {
             html = html.replaceAll(Pattern.quote("${" + me.getKey() + "}"), Matcher.quoteReplacement(me.getValue()));
         }
         Files.write(target, html.getBytes(StandardCharsets.UTF_8));
-        System.out.println("Written to " + target);
+        LOGGER.info(() -> "Completed HTML Report '" + title + "' to path: " + target);
     }
 
     /**
@@ -250,13 +219,18 @@ public class UScale {
     }
 
     private static final UScale scaleMapper(final TaskRunnerBuilder scaleBuilder) {
-        UMode.PARALLEL.getModel().executeTasks("Warmup", scaleBuilder.build("warmup", 2));
+        LOGGER.info("Starting Scalability testing");
+        final long start = System.nanoTime();
+        LOGGER.finer("warming up task");
+        UStats[] rep = UMode.PARALLEL.getModel().executeTasks("Warmup", scaleBuilder.build("warmup", 2));
+        LOGGER.fine(() -> "Warmed up results:\n" + rep[0].toString());
 
         final List<UStats> results = new ArrayList<>(20);
         
         for (int i = 1; i <= SCALE_LIMIT; i *= 2) {
-
+            
             results.add(runStats(i, scaleBuilder));
+            
             if (results.get(results.size() -1).getCount() <= 3) {
                 break;
             }
@@ -271,16 +245,29 @@ public class UScale {
                 results.add(runStats(j, scaleBuilder));
             }
         }
+        
+        LOGGER.info(String.format("Completed round for tests %s in %.3fms", "unknown", (System.nanoTime() - start) / 1000000.0));
 
         return new UScale(results);
     }
 
     private static UStats runStats(int i, TaskRunnerBuilder scaleBuilder) {
         final String runName = "Scale " + i;
+        
+        final long beg = System.nanoTime();
 
         final TaskRunner runner = scaleBuilder.build(runName, i);
+        
+        LOGGER.finer(() -> String.format("Built data for %s in %.3fms", runName, (System.nanoTime() - beg) / 1000000.0));
 
-        return UMode.SEQUENTIAL.getModel().executeTasks(runName, runner)[0];
+        UStats stats = UMode.SEQUENTIAL.getModel().executeTasks(runName, runner)[0];
+        
+        if (LOGGER.isLoggable(Level.INFO)) {
+            final int scale = i;
+            final long time = System.nanoTime() - beg;
+            LOGGER.fine(() -> String.format("Completed scale test %d in %.3fms", scale, time / 1000000.0));
+        }
+        return stats;
     }
 
     /**

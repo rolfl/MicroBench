@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("javadoc")
@@ -31,6 +32,7 @@ public class ExampleScales {
     }
 
     public static void main(String[] args) throws IOException {
+        UUtils.setStandaloneLogging(Level.INFO);
         //UScale.function(div -> div / 3, scale -> scale).report();
 
         UScale.function(
