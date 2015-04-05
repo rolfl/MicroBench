@@ -36,26 +36,27 @@ public class ExampleScales {
         //UScale.function(div -> div / 3, scale -> scale).report();
 
         UScale.function(
+                "Linear",
                 data -> linear(data),
                 scale -> scale, true)
-           .reportHTML("Linear", Paths.get("output/Linear.html"));
+           .reportHTML(Paths.get("output/Linear.html"));
 
         if (!Boolean.getBoolean("DOALL")) {
             return;
         }
         
-        UScale scales = UScale.consumer(Arrays::sort, scale -> randomData(scale), false);
+        UScale scales = UScale.consumer("Arrays::Sort", Arrays::sort, scale -> randomData(scale), false);
         
         scales.report();
-        scales.reportHTML("Arrays::sort", Paths.get("output/ArraysSort.html"));
-        System.out.println(scales.toJSONString("Arrays::Sort"));
+        scales.reportHTML(Paths.get("output/ArraysSort.html"));
+        System.out.println(scales.toJSONString());
         
 
         arrayCounts.keySet().stream().sorted()
                 .map(scale -> String.format("Scale %d -> created %d", scale, arrayCounts.get(scale).get()))
                 .forEach(System.out::println);
 
-        UScale.consumer(Arrays::sort, scale -> randomData(scale), true).report();
+        UScale.consumer("Arrays::Sort (presorted)", Arrays::sort, scale -> randomData(scale), true).report();
 
         arrayCounts.keySet().stream().sorted()
                 .map(scale -> String.format("Scale %d -> created %d", scale, arrayCounts.get(scale).get()))

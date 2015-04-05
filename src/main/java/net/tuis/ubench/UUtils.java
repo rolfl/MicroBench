@@ -152,7 +152,7 @@ public final class UUtils {
             LOGGER.log(Level.WARNING, re, () -> "Unexpected exception loading resource " + path);
             throw re;
         } finally {
-            LOGGER.info(() -> String.format("Loaded resource %s in %.3fms", path,
+            LOGGER.fine(() -> String.format("Loaded resource %s in %.3fms", path,
                     (System.nanoTime() - start) / 1000000.0));
         }
     }

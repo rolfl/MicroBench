@@ -2,10 +2,12 @@ package net.tuis.ubench;
 
 import net.tuis.ubench.scale.MathEquation;
 import net.tuis.ubench.scale.Models;
+
 import org.junit.Test;
 
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.logging.Level;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -14,17 +16,21 @@ import static org.junit.Assert.assertTrue;
  * @author Simon Forsberg
  */
 public class ScaleTest {
-
+    
+    static {
+        UUtils.setStandaloneLogging(Level.FINE);
+    }
+    
     @Test
     public void bubbleSort() {
-        MathEquation eq = UScale.consumer(arr -> bubbleSort(arr), i -> DataRandomizer.randomData(i), false).determineBestFit();
+        MathEquation eq = UScale.consumer("BubbleSort", arr -> bubbleSort(arr), i -> DataRandomizer.randomData(i), false).determineBestFit();
         assertTrue(eq.isValid());
         assertEquals(Models.N_SQUARED, eq.getModel());
     }
 
     @Test
     public void integerDivide() {
-        UScale scale = UScale.function(i -> i / 3, i -> i, false);
+        UScale scale = UScale.function("Int Divide", i -> i / 3, i -> i, false);
         MathEquation[] eqs = scale.fitEquations();
         MathEquation eq = scale.determineBestFit();
         System.out.println(Arrays.toString(eqs));
@@ -41,14 +47,14 @@ public class ScaleTest {
 
     @Test
     public void linear() {
-        MathEquation eq = UScale.function(data -> linear(data), scale -> scale, true)
+        MathEquation eq = UScale.function("Linear", data -> linear(data), scale -> scale, true)
                 .determineBestFit();
         assertEquals(Models.LINEAR, eq.getModel());
     }
 
     @Test
     public void arraySort() {
-        UScale scales = UScale.consumer(Arrays::sort, scale -> DataRandomizer.randomData(scale), false);
+        UScale scales = UScale.consumer("Array Sort", Arrays::sort, scale -> DataRandomizer.randomData(scale), false);
         MathEquation eq = scales.determineBestFit();
         assertEquals(Models.N_LOG_N, eq.getModel());
     }

@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -42,9 +43,19 @@ public class UScale {
     }
 
     private final List<UStats> stats;
+    private final String title;
 
-    private UScale(List<UStats> stats) {
+    private UScale(String title, List<UStats> stats) {
+        this.title = title;
         this.stats = stats;
+    }
+    
+    /**
+     * Get the name this UScale report was titled with.
+     * @return the title used when created
+     */
+    public String getTitle() {
+        return title;
     }
     
     /**
@@ -71,6 +82,10 @@ public class UScale {
                         sr.getIndex(), sr.getAverageRawNanos(), sr.getCount(), UUtils.getNanoTick()))
                 .collect(Collectors.joining("\n"));
         MathEquation bestFit = determineBestFit();
+        writer.write(title);
+        char[] uls = new char[title.length()];
+        Arrays.fill(uls, '=');
+        writer.write(uls);
         writer.write(report);
         writer.write("Best fit is: " + bestFit + "\n");
         writer.flush();
@@ -86,10 +101,9 @@ public class UScale {
 
     /**
      * Get the data as JSON data in an array format (<code>[ [scale,nanos], ...]</code>
-     * @param title The name to apply to this data.
      * @return a JSON formatted string containing the raw data.
      */
-    public String toJSONString(String title) {
+    public String toJSONString() {
         
         String rawdata = stats.stream().sorted(Comparator.comparingInt(UStats::getIndex))
                 .map(sr -> sr.toJSONString())
@@ -105,11 +119,10 @@ public class UScale {
     
     /**
      * Create an HTML document (with data and chart) plotting the performance.
-     * @param title The Title for the target page.
      * @param target the destination to store the HTML document at.
      * @throws IOException if there is a problem writing to the target path
      */
-    public void reportHTML(final String title, final Path target) throws IOException {
+    public void reportHTML(final Path target) throws IOException {
         
         Files.createDirectories(target.toAbsolutePath().getParent());
         
@@ -117,7 +130,7 @@ public class UScale {
         
         String html = UUtils.readResource("net/tuis/ubench/scale/UScale.html");
         Map<String, String> subs = new HashMap<>();
-        subs.put("DATA", toJSONString(title));
+        subs.put("DATA", toJSONString());
         
         subs.put("TITLE", title);
         for (Map.Entry<String, String> me : subs.entrySet()) {
@@ -142,14 +155,16 @@ public class UScale {
      * 
      * @param <T>
      *            the type of the input data needed by the Function
+     * @param title 
+     *            the title to apply to all reports and results
      * @param function
      *            the Function that computes the T data
      * @param scaler
      *            a supplier that can supply T data of different sizes
      * @return A UScale instance containing the results of the testing
      */
-    public static <T> UScale function(Function<T, ?> function, IntFunction<T> scaler) {
-        return function(function, scaler, true);
+    public static <T> UScale function(String title, Function<T, ?> function, IntFunction<T> scaler) {
+        return function(title, function, scaler, true);
     }
 
     /**
@@ -157,6 +172,8 @@ public class UScale {
      * 
      * @param <T>
      *            the type of the input data needed by the Function
+     * @param title 
+     *            the title to apply to all reports and results
      * @param function
      *            the computer that processes the T data
      * @param scaler
@@ -166,8 +183,8 @@ public class UScale {
      *            reused often.
      * @return A UScale instance containing the results of the testing
      */
-    public static <T> UScale function(Function<T, ?> function, IntFunction<T> scaler, final boolean reusedata) {
-        return consumer(function::apply, scaler, reusedata);
+    public static <T> UScale function(String title, Function<T, ?> function, IntFunction<T> scaler, final boolean reusedata) {
+        return consumer(title, function::apply, scaler, reusedata);
     }
 
     /**
@@ -185,14 +202,16 @@ public class UScale {
      * 
      * @param <T>
      *            the type of the input data needed by the Consumer
+     * @param title 
+     *            the title to apply to all reports and results
      * @param consumer
      *            the Consumer that processes the T data
      * @param scaler
      *            a supplier that can supply T data of different sizes
      * @return A UScale instance containing the results of the testing
      */
-    public static <T> UScale consumer(Consumer<T> consumer, IntFunction<T> scaler) {
-        return consumer(consumer, scaler, true);
+    public static <T> UScale consumer(String title, Consumer<T> consumer, IntFunction<T> scaler) {
+        return consumer(title, consumer, scaler, true);
     }
 
     /**
@@ -200,6 +219,8 @@ public class UScale {
      * 
      * @param <T>
      *            the type of the input data needed by the Consumer
+     * @param title 
+     *            the title to apply to all reports and results
      * @param consumer
      *            the Consumer that processes the T data
      * @param scaler
@@ -209,17 +230,17 @@ public class UScale {
      *            reused often.
      * @return A UScale instance containing the results of the testing
      */
-    public static <T> UScale consumer(Consumer<T> consumer, IntFunction<T> scaler, final boolean reusedata) {
+    public static <T> UScale consumer(String title, Consumer<T> consumer, IntFunction<T> scaler, final boolean reusedata) {
 
         final ScaleControl<T> scontrol = new ScaleControl<>(consumer, scaler, reusedata);
 
         final TaskRunnerBuilder builder = (name, scale) -> scontrol.buildTask(name, scale);
 
-        return scaleMapper(builder);
+        return scaleMapper(title, builder);
     }
 
-    private static final UScale scaleMapper(final TaskRunnerBuilder scaleBuilder) {
-        LOGGER.info("Starting Scalability testing");
+    private static final UScale scaleMapper(final String title, final TaskRunnerBuilder scaleBuilder) {
+        LOGGER.info(title + ": Starting Scalability testing");
         final long start = System.nanoTime();
         LOGGER.finer("warming up task");
         UStats[] rep = UMode.PARALLEL.getModel().executeTasks("Warmup", scaleBuilder.build("warmup", 2));
@@ -229,7 +250,7 @@ public class UScale {
         
         for (int i = 1; i <= SCALE_LIMIT; i *= 2) {
             
-            results.add(runStats(i, scaleBuilder));
+            results.add(runStats(title, i, scaleBuilder));
             
             if (results.get(results.size() -1).getCount() <= 3) {
                 break;
@@ -242,17 +263,17 @@ public class UScale {
                 if (j == last >> 1 || j == last >> 2) {
                     continue;
                 }
-                results.add(runStats(j, scaleBuilder));
+                results.add(runStats(title, j, scaleBuilder));
             }
         }
         
-        LOGGER.info(String.format("Completed round for tests %s in %.3fms", "unknown", (System.nanoTime() - start) / 1000000.0));
+        LOGGER.info(String.format("%s: Completed tests in %.3fms", title, (System.nanoTime() - start) / 1000000.0));
 
-        return new UScale(results);
+        return new UScale(title, results);
     }
 
-    private static UStats runStats(int i, TaskRunnerBuilder scaleBuilder) {
-        final String runName = "Scale " + i;
+    private static UStats runStats(String title, int i, TaskRunnerBuilder scaleBuilder) {
+        final String runName = title + ": Scale " + i;
         
         final long beg = System.nanoTime();
 
@@ -263,9 +284,8 @@ public class UScale {
         UStats stats = UMode.SEQUENTIAL.getModel().executeTasks(runName, runner)[0];
         
         if (LOGGER.isLoggable(Level.INFO)) {
-            final int scale = i;
             final long time = System.nanoTime() - beg;
-            LOGGER.fine(() -> String.format("Completed scale test %d in %.3fms", scale, time / 1000000.0));
+            LOGGER.fine(() -> String.format("Completed scale test %s in %.3fms", runName, time / 1000000.0));
         }
         return stats;
     }
