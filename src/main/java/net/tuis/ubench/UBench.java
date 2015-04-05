@@ -12,6 +12,7 @@ import java.util.function.LongPredicate;
 import java.util.function.LongSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 /**
  * The UBench class encompasses a suite of tasks that are to be compared...
@@ -79,6 +80,8 @@ import java.util.function.Supplier;
  *
  */
 public final class UBench {
+    
+    private static final Logger LOGGER = UUtils.getLogger(UBench.class); 
 
     /**
      * At most a billion iterations of any task will be attempted.
@@ -96,12 +99,14 @@ public final class UBench {
      */
     public UBench(String suiteName) {
         this.suiteName = suiteName;
+        LOGGER.info(() -> String.format("Creating UBench for suite %s", suiteName));
     }
 
     private UBench putTask(String name, Task t) {
         synchronized (tasks) {
             tasks.put(name, t);
         }
+        LOGGER.fine(() -> String.format("UBench suite %s: adding task %s", suiteName, name));
         return this;
     }
 
@@ -297,9 +302,17 @@ public final class UBench {
         int vit = iterations <= 0 ? 0 : Math.min(MAX_RESULTS, iterations);
         int vmin = (stableSpan <= 0 || stableBound <= 0) ? 0 : Math.min(stableSpan, vit);
         long vtime = timeLimit <= 0 ? 0 : (timeUnit == null ? 0 : timeUnit.toNanos(timeLimit));
+        
+        final long start = System.nanoTime();
+        LOGGER.fine(() -> String.format("UBench suite %s: running all tasks in mode %s", suiteName, vmode.name()));
 
         TaskRunner[] mytasks = getTasks(vit, vmin, stableBound, vtime);
         UStats[] ret = vmode.getModel().executeTasks(suiteName, mytasks);
+        
+        final long time = System.nanoTime() - start;
+        LOGGER.info(() -> String.format("UBench suite %s: completed benchmarking all tasks using mode %s in %.3fms", 
+                suiteName, vmode.name(), time / 1000000.0));
+        
         return new UReport(Arrays.asList(ret));
     }
 

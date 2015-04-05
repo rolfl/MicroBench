@@ -3,6 +3,7 @@ package net.tuis.ubench;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.function.ToIntFunction;
+import java.util.logging.Level;
 import java.util.stream.IntStream;
 
 /**
@@ -39,6 +40,7 @@ public class ExampleCode {
      *            ignored.
      */
     public static void main(String[] args) {
+        UUtils.setStandaloneLogging(Level.INFO);
         final String testdata = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789";
         final String hello = "Hello World!";
 
