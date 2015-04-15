@@ -91,10 +91,18 @@ public class UScale {
         writer.flush();
     }
 
+    /**
+     * Retrieve the best-fitting possible standard scaling equation that describes these scaling results.
+     * @return the best fit equation
+     */
     public MathEquation determineBestFit() {
         return ScaleDetect.detect(this);
     }
 
+    /**
+     * Retrieve the possible standard scaling equations that describes these scaling results in best-fit first order.
+     * @return the standard scaling equations in best-fit-first order.
+     */
     public MathEquation[] fitEquations() {
         return ScaleDetect.rank(this);
     }

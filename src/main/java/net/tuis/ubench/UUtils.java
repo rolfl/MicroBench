@@ -79,7 +79,7 @@ public final class UUtils {
      * code is logging 'stand alone' then this method will also change the
      * output level of the log handlers.
      * 
-     * @param level
+     * @param level The log level to activate for future log levels.
      */
     public static void setLogLevel(Level level) {
         // all other ubench loggers inherit from here.

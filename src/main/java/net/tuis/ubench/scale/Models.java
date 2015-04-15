@@ -4,24 +4,55 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
 /**
+ * Container of standard Scaling models.
+ * 
  * @author Simon Forsberg
  */
 public class Models {
 
+    /**
+     * Represents O(a<sup>n</sup>)
+     */
     public static final MathModel EXPONENTIAL = new MathModel("O(a^n)", "%f ^ n",
-            params -> x -> Math.pow(params[0], x), new double[]{ 2 });
+            params -> x -> Math.pow(params[0], x), new double[] { 2 });
 
+    /**
+     * Represents O(n log n)
+     */
     public static final MathModel N_LOG_N = new MathModel("O(n log n)", "%f * n log n",
-            params -> x -> params[0] * x * Math.log10(x), new double[]{ 1 });
+            params -> x -> params[0] * x * Math.log10(x), new double[] { 1 });
 
+    /**
+     * Represents O(log n)
+     */
     public static final MathModel LOG_N = new MathModel("O(log n)", "%f * log n",
-            params -> x -> params[0] * Math.log10(x), new double[]{ 1 });
+            params -> x -> params[0] * Math.log10(x), new double[] { 1 });
 
+    /**
+     * Represents O(1)
+     */
     public static final MathModel CONSTANT = createPolynom(0);
+
+    /**
+     * Represents O(n)
+     */
     public static final MathModel LINEAR = createPolynom(1);
+
+    /**
+     * Represents O(n<sup>2</sup>)
+     */
     public static final MathModel N_SQUARED = createPolynom(2);
 
-
+    /**
+     * Create an n<sup>th</sup> degree polynomial model.
+     * 
+     * e.g. <code>createPolynom(4)</code> would create an O(n<sup>4</sup>)
+     * model.
+     * 
+     * @param degree
+     *            the polynomial degree
+     * @return a MathModel representing the specified degree.
+     */
     public static MathModel createPolynom(int degree) {
         if (degree < 0) {
             throw new IllegalArgumentException("Degree must be positive");
@@ -65,10 +96,6 @@ public class Models {
                 break;
         }
         return new MathModel(name, format.toString(), equation, params);
-    }
-
-    private static DoubleUnaryOperator nSquared(double a, double b, double c) {
-        return x -> a * x * x + b * x + c;
     }
 
 }

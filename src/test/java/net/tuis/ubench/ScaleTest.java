@@ -1,21 +1,21 @@
 package net.tuis.ubench;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.logging.Level;
+
 import net.tuis.ubench.scale.MathEquation;
 import net.tuis.ubench.scale.Models;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.logging.Level;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 /**
  * @author Simon Forsberg
  */
+@SuppressWarnings("javadoc")
 public class ScaleTest {
     
     @BeforeClass

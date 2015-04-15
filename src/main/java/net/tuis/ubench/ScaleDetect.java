@@ -7,7 +7,6 @@ import org.apache.commons.math3.linear.*;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
@@ -64,6 +63,11 @@ public class ScaleDetect {
         return values;
     }
 
+    /**
+     * From the results of a UScale run, calculate the best-fit scaling equation
+     * @param scale the results to analyze
+     * @return the best-fit scaling equation.
+     */
     public static MathEquation detect(UScale scale) {
         return Arrays.stream(rank(scale))
                 .filter(eq -> eq.isValid())
@@ -83,6 +87,11 @@ public class ScaleDetect {
         return scale.getStats().stream().mapToDouble(st -> st.getFastestNanos()).toArray();
     }
 
+    /**
+     * From the scaling results calculate a number of scaling equations, and return their equations in descending order of relevance 
+     * @param scale the Scale results to rank
+     * @return the possible equations in best-fit-first order.
+     */
     public static MathEquation[] rank(UScale scale) {
         double[] x = extractX(scale);
         double[] y = extractY(scale);
@@ -125,14 +134,14 @@ public class ScaleDetect {
         double yAverage = Arrays.stream(y).average().getAsDouble();
         double variance = 0;
         double residualSumOfSquares = 0;
-        double explainedSumOfSquares = 0;
+//        double explainedSumOfSquares = 0;
 
         for (int i = 0; i < y.length; i++) {
             double yi = y[i];
             double fi = finalFunction.applyAsDouble(x[i]);
             variance += (yi - yAverage) * (yi - yAverage);
             residualSumOfSquares += (yi - fi) * (yi - fi);
-            explainedSumOfSquares += (fi - yAverage) * (fi - yAverage);
+//            explainedSumOfSquares += (fi - yAverage) * (fi - yAverage);
         }
 
         double rSquared = 1 - residualSumOfSquares / variance;

@@ -10,6 +10,7 @@ import java.util.stream.IntStream;
  * @author rolfl
  * @author Simon Forsberg
  */
+@SuppressWarnings("javadoc")
 public class DataRandomizer {
 
     private static final ConcurrentMap<Integer, AtomicInteger> arrayCounts = new ConcurrentHashMap<>();

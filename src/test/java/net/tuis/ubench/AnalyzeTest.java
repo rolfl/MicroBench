@@ -2,12 +2,15 @@ package net.tuis.ubench;
 
 import net.tuis.ubench.scale.MathEquation;
 import net.tuis.ubench.scale.Models;
+
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**
  * @author Simon Forsberg
  */
+@SuppressWarnings("javadoc")
 public class AnalyzeTest {
 
     @Test
