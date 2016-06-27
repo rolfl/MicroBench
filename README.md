@@ -10,7 +10,7 @@ Maven dependency is available on Maven Central:
     <dependency>
         <groupId>net.tuis.ubench</groupId>
         <artifactId>ubench</artifactId>
-        <version>0.1.0</version>
+        <version>0.2.0</version>
     </dependency>
 
 ##Example Use Case - Largest Prime Calculator
