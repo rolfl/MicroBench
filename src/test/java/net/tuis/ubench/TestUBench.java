@@ -34,4 +34,24 @@ public class TestUBench {
         bench.press(1);
     }
 
+    private static void CanFail(boolean fail) {
+    	if (fail) {
+    		throw new RuntimeException("Forced Fail");
+    	}
+    }
+    
+    @Test
+    public void testRunnableTask() {
+        UBench bench = new UBench("test");
+        bench.addTask("test", () -> CanFail(false));
+        bench.press(1);
+    }
+    
+    @Test(expected=RuntimeException.class)
+    public void testRunnableTaskException() {
+        UBench bench = new UBench("test");
+        bench.addTask("test", () -> CanFail(true));
+        bench.press(1);
+    }
+    
 }

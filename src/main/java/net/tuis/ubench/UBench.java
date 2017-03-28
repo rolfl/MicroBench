@@ -270,6 +270,25 @@ public final class UBench {
     public UBench addDoubleTask(String name, DoubleSupplier task) {
         return addDoubleTask(name, task, null);
     }
+    
+    
+    /**
+     * Include a named task that has no output value in to the benchmark.
+     * 
+     * @param name
+     *            The name of the task. Only one task with any one name is
+     *            allowed.
+     * @param task
+     *            The task to perform
+     * @return The same object, for chaining calls.
+     */
+    public UBench addTask(String name, Runnable task) {
+        return putTask(name, () -> {
+            long start = System.nanoTime();
+            task.run();
+            return System.nanoTime() - start;
+        });
+    }
 
     /**
      * Benchmark all added tasks until they complete the desired iteration
